@@ -44,6 +44,7 @@ public class ContentProcessor {
 	List<String> paths = new ArrayList<String>();
 	private static ContentProcessor INSTANCE;
 	static CloudFilesOperationUtil cloudFilesOperationUtil = new CloudFilesOperationUtil();
+
 	public static synchronized ContentProcessor getInstance() {
 		if (null == INSTANCE) {
 			INSTANCE = new ContentProcessor();
@@ -57,6 +58,7 @@ public class ContentProcessor {
 		JSONObject oJsonObject = new JSONObject();
 		PDDocument document = null;
 		JSONArray oJsonArray = new JSONArray();
+		System.setProperty("org.apache.pdfbox.baseParser.pushBackSize", "999000");
 		try {
 			if (type.equalsIgnoreCase("docx")) {
 				XWPFDocument document1 = new XWPFDocument(OPCPackage.open(inputFile));
@@ -74,7 +76,8 @@ public class ContentProcessor {
 					ByteArrayOutputStream os = new ByteArrayOutputStream();
 					ImageIO.write(bufferedImage, "gif", os);
 					InputStream is = new ByteArrayInputStream(os.toByteArray());
-					cloudFilesOperationUtil.fIleUploaded(path + pagecounter + BinderConstants.IMG_EXTENSION, is, CloudFileConstants.IMGFILETYPE);
+					cloudFilesOperationUtil.fIleUploaded(path + pagecounter + BinderConstants.IMG_EXTENSION, is,
+							CloudFileConstants.IMGFILETYPE);
 					oJsonArray.add(path + pagecounter + BinderConstants.IMG_EXTENSION);
 					is.close();
 					os.close();
@@ -95,14 +98,17 @@ public class ContentProcessor {
 					slides[i].draw(graphics);
 					// save the output
 					ByteArrayOutputStream os = new ByteArrayOutputStream();
+					javax.imageio.ImageIO.setUseCache(false);
 					javax.imageio.ImageIO.write(img, "JPG", os);
 					InputStream is = new ByteArrayInputStream(os.toByteArray());
-					cloudFilesOperationUtil.fIleUploaded(path + pagecounter + BinderConstants.IMG_EXTENSION, is, CloudFileConstants.IMGFILETYPE);
+					cloudFilesOperationUtil.fIleUploaded(path + pagecounter + BinderConstants.IMG_EXTENSION, is,
+							CloudFileConstants.IMGFILETYPE);
 					os.close();
 					is.close();
 				}
 				oJsonObject.put("Success", "File Uploaded Successfully");
 			} else {
+				// long lStartTime = System.currentTimeMillis();
 				BufferedImage bufferedImage = null;
 				document = PDDocument.load(inputFile);
 				List<PDPage> pages = document.getDocumentCatalog().getAllPages();
@@ -112,15 +118,26 @@ public class ContentProcessor {
 					ByteArrayOutputStream os = new ByteArrayOutputStream();
 					javax.imageio.ImageIO.write(bufferedImage, "JPG", os);
 					InputStream is = new ByteArrayInputStream(os.toByteArray());
-					cloudFilesOperationUtil.fIleUploaded(path + pagecounter + BinderConstants.IMG_EXTENSION, is, CloudFileConstants.IMGFILETYPE);
+					cloudFilesOperationUtil.fIleUploaded(path + pagecounter + BinderConstants.IMG_EXTENSION, is,
+							CloudFileConstants.IMGFILETYPE);
 					is.close();
 					oJsonArray.add(path + pagecounter + BinderConstants.IMG_EXTENSION);
 				}
 				oJsonObject.put("Success", "File Uploaded Successfully");
+				/*
+				 * long lEndTime = System.currentTimeMillis(); long output = lEndTime -
+				 * lStartTime; System.out.println("Timing in ImageCOnersion in  MilliSeconds"+
+				 * output);
+				 */
 			}
-			InputStream is = new ByteArrayInputStream(oJsonArray.toJSONString().getBytes());
-			cloudFilesOperationUtil.fIleUploaded("files/" + fileName.subSequence(0, fileName.lastIndexOf('.')) + ".JSON",is,CloudFileConstants.JSONFILETYPE);
-		} catch (IOException e) {
+			/*
+			 * long lStartTime = System.currentTimeMillis(); InputStream is = new
+			 * ByteArrayInputStream(oJsonArray.toJSONString().getBytes());
+			 * cloudFilesOperationUtil.fIleUploaded("files/" + fileName.subSequence(0,
+			 * fileName.lastIndexOf('.')) + ".JSON",is,CloudFileConstants.JSONFILETYPE);
+			 * long lEndTime = System.currentTimeMillis(); long output = lEndTime -
+			 * lStartTime; System.out.println("Timing in individualJSON"+ output);
+			 */ } catch (IOException e) {
 			throw new FileItException(e.getMessage());
 		} catch (Exception e) {
 			throw new FileItException(e.getMessage());
