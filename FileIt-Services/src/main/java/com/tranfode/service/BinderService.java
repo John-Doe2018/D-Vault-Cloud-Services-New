@@ -207,6 +207,9 @@ public class BinderService {
 			String type = file3.getObject(String.class);
 			String fileName = file4.getObject(String.class);
 			InputStream fileStream = file.getObject(InputStream.class);
+			CloudStorageConfig oCloudStorageConfig = new CloudStorageConfig();
+			oCloudStorageConfig.deleteFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
+					bookName + "/Images/");
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			org.apache.commons.io.IOUtils.copy(fileStream, baos);
 			byte[] bytes = baos.toByteArray();
