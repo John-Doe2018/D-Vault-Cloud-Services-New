@@ -62,6 +62,7 @@ import com.tranfode.domain.DeleteBookRequest;
 import com.tranfode.domain.DeleteFileRequest;
 import com.tranfode.domain.DownloadFileRequest;
 import com.tranfode.domain.FileItContext;
+import com.tranfode.domain.GetBookTreeRequest;
 import com.tranfode.domain.GetImageRequest;
 import com.tranfode.domain.SearchBookRequest;
 import com.tranfode.domain.SearchBookResponse;
@@ -265,8 +266,9 @@ public class BinderService {
 	@POST
 	@Path("getBookTreeDetail")
 	@Produces("application/json")
-	public JSONObject BookTreeDetail(String bookName, String classificationName) throws Exception {
-		JSONObject document = BookTreeProcessor.getInstance().processBookXmltoDoc(bookName, classificationName);
+	public JSONObject BookTreeDetail(GetBookTreeRequest oGetBookTreeRequest) throws Exception {
+		JSONObject document = BookTreeProcessor.getInstance().processBookXmltoDoc(oGetBookTreeRequest.getBookname(),
+				oGetBookTreeRequest.getClassificationname());
 		return document;
 	}
 
