@@ -96,7 +96,7 @@ public class TransformationProcessor {
 			Result res = new StreamResult(baos);
 			transformer.transform(domSource, res);
 			InputStream isFromFirstData = new ByteArrayInputStream(baos.toByteArray());
-			oCloudStorageConfig.uploadFile(bucketName, "files/" + binderlist.getName() + ".xml", isFromFirstData,
+			oCloudStorageConfig.uploadFile(bucketName, "files/" +binderlist.getClassification() + "/"+ binderlist.getName() + ".xml", isFromFirstData,
 					"application/xml");
 		} catch (Exception e) {
 			throw new FileItException(e.getMessage());

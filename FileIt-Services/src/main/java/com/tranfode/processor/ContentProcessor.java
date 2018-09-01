@@ -162,13 +162,13 @@ public class ContentProcessor {
 		return absoluteImgPath;
 	}
 
-	public JSONObject processContent(String bookName, InputStream inputFile, String path, String type, String fileName)
-			throws FileItException {
+	public JSONObject processContent(String bookName, String classificationName, InputStream inputFile, String path,
+			String type, String fileName) throws FileItException {
 		JSONObject oJsonObject = new JSONObject();
 		CloudStorageConfig oCloudStorageConfig = new CloudStorageConfig();
 		try {
 			oCloudStorageConfig.uploadFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
-					bookName + "/Contents/" + fileName, inputFile, type);
+					classificationName + "/" + bookName + "/Contents/" + fileName, inputFile, type);
 			oJsonObject.put("Success", "File Uploaded Successfully");
 			// inputFile.close();
 
@@ -179,14 +179,15 @@ public class ContentProcessor {
 		return oJsonObject;
 	}
 
-	public void getMultipleFileDownload(String bookname, List<String> filename, File oFile)
+	public void getMultipleFileDownload(String classificationame, String bookname, List<String> filename, File oFile)
 			throws FileItException, IOException {
 		FileOutputStream fos = new FileOutputStream(oFile);
 		ZipOutputStream zos = new ZipOutputStream(fos);
 		InputStream iIP;
 		for (int i = 0; i < filename.size(); i++) {
 			try {
-				iIP = cloudFilesOperationUtil.getFIleInputStream(bookname + "/Contents/" + filename.get(i));
+				iIP = cloudFilesOperationUtil
+						.getFIleInputStream(classificationame + "/" + bookname + "/Contents/" + filename.get(i));
 				zos.putNextEntry(new ZipEntry(filename.get(i)));
 				byte[] bytes = new byte[1024];
 				int length;
@@ -202,13 +203,13 @@ public class ContentProcessor {
 		zos.close();
 	}
 
-	public void getZipFile(String bookName, File oFile) throws FileItException, IOException {
+	public void getZipFile(String classificationname, String bookName, File oFile) throws FileItException, IOException {
 		FileOutputStream fos = new FileOutputStream(oFile);
 		ZipOutputStream zos = new ZipOutputStream(fos);
 		CloudStorageConfig oCloudStorageConfig = new CloudStorageConfig();
 		InputStream iIP;
 		List<String> obj = oCloudStorageConfig.listBucket(CloudPropertiesReader.getInstance().getString("bucket.name"));
-		String wordToSearchFor = bookName + '/' + "Contents";
+		String wordToSearchFor = classificationname + '/' + bookName + '/' + "Contents";
 		for (String word : obj) {
 			if (word.contains(wordToSearchFor))
 				try {

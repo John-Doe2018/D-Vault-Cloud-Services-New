@@ -5,6 +5,15 @@ public class DeleteFileRequest {
 	String bookName;
 	String fileName;
 	boolean bookcreated;
+	String classificationName;
+	
+	public String getClassificationName() {
+		return classificationName;
+	}
+
+	public void setClassificationName(String classificationName) {
+		this.classificationName = classificationName;
+	}
 
 	public boolean isBookcreated() {
 		return bookcreated;

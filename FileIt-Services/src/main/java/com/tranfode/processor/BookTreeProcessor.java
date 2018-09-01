@@ -28,7 +28,7 @@ public class BookTreeProcessor {
 
 	
 	static CloudFilesOperationUtil cloudFilesOperationUtil = new CloudFilesOperationUtil();
-	public JSONObject processBookXmltoDoc(String bookName) throws Exception {
+	public JSONObject processBookXmltoDoc(String bookName,String classificationName) throws Exception {
 
 		String line = "", str = "";
 		DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
@@ -36,7 +36,7 @@ public class BookTreeProcessor {
 		JSONObject json;
 		try {
 			documentBuilder = documentFactory.newDocumentBuilder();
-			String requiredXmlPath = "files/" + bookName + ".xml";
+			String requiredXmlPath = "files/" +classificationName+"/"+ bookName + ".xml";
 			JSONParser parser = new JSONParser();
 			BufferedReader br = null;
 			InputStream xmlInputStream = cloudFilesOperationUtil

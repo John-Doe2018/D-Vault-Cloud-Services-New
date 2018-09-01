@@ -49,9 +49,9 @@ public class DeleteBookProcessor {
 		}
 		List<String> oList = oCloudStorageConfig
 				.listBucket(CloudPropertiesReader.getInstance().getString("bucket.name"));
-		String wordToSearchFor = deleteBookRequest + "/Images";
-		String contentName = deleteBookRequest + "/Contents";
-		String xmlName = "files/" + deleteBookRequest + ".xml";
+		String wordToSearchFor = classificationName+"/"+deleteBookRequest + "/Images";
+		String contentName = classificationName+"/"+deleteBookRequest + "/Contents";
+		String xmlName = "files/" +classificationName+"/"+ deleteBookRequest + ".xml";
 		for (String word : oList) {
 			if (word.contains(wordToSearchFor) || word.contains(contentName) || word.contains(xmlName)) {
 				oCloudStorageConfig.deleteFile(CloudPropertiesReader.getInstance().getString("bucket.name"), word);

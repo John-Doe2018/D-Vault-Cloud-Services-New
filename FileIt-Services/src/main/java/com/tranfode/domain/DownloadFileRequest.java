@@ -5,7 +5,16 @@ import java.util.List;
 public class DownloadFileRequest {
 
 	String bookName;
+	String classificationname;
 	List<String> fileName;
+
+	public String getClassificationname() {
+		return classificationname;
+	}
+
+	public void setClassificationname(String classificationname) {
+		this.classificationname = classificationname;
+	}
 
 	public String getBookName() {
 		return bookName;

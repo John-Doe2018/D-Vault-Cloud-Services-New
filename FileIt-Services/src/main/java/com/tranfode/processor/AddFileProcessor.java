@@ -24,10 +24,10 @@ import com.tranfode.util.CloudFilesOperationUtil;
 
 public class AddFileProcessor {
 	static CloudFilesOperationUtil cloudFilesOperationUtil = new CloudFilesOperationUtil();
-	public void updateXML(String bookName, List<BookRequests> oBookRequests) throws Exception {
+	public void updateXML(String bookName,String classificationName, List<BookRequests> oBookRequests) throws Exception {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		InputStream oInputStream = cloudFilesOperationUtil
-				.getFIleInputStream("files/" + bookName + ".xml");
+				.getFIleInputStream("files/" +classificationName+"/"+ bookName + ".xml");
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		Document doc = builder.parse(oInputStream);
 		Node topicref = doc.getElementsByTagName("topicref").item(0);
@@ -47,6 +47,6 @@ public class AddFileProcessor {
 		Result res = new StreamResult(baos);
 		transformer.transform(domSource, res);
 		InputStream isFromFirstData = new ByteArrayInputStream(baos.toByteArray());
-		cloudFilesOperationUtil.fIleUploaded("files/" + bookName + ".xml", isFromFirstData, CloudFileConstants.XMLFILETYPE);
+		cloudFilesOperationUtil.fIleUploaded("files/"+classificationName+"/"+ bookName + ".xml", isFromFirstData, CloudFileConstants.XMLFILETYPE);
 	}
 }

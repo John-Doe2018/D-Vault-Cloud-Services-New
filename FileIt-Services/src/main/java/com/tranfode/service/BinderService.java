@@ -119,7 +119,8 @@ public class BinderService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public List<String> getFile(GetImageRequest oGetImageRequest) throws Exception {
 		InputStream fis;
-		String wordToSearchFor1 = oGetImageRequest.getBookName() + '/' + "Contents/";
+		String wordToSearchFor1 = oGetImageRequest.getClassification() + '/' + oGetImageRequest.getBookName() + '/'
+				+ "Contents/";
 		List<String> oImages = new ArrayList<>();
 		int pagecounter = 0;
 		List<String> oList = CloudStorageConfig.getInstance()
@@ -133,9 +134,11 @@ public class BinderService {
 			fis = CloudStorageConfig.getInstance().getFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
 					word1);
 			pagecounter = ContentProcessor.getInstance().processContentImage(oGetImageRequest.getBookName(), fis,
-					oGetImageRequest.getBookName() + "/Images/", extension, fileName, pagecounter);
+					oGetImageRequest.getClassification() + "/" + oGetImageRequest.getBookName() + "/Images/", extension,
+					fileName, pagecounter);
 		}
-		String wordToSearchFor = oGetImageRequest.getBookName() + "/Images/";
+		String wordToSearchFor = oGetImageRequest.getClassification() + "/" + oGetImageRequest.getBookName()
+				+ "/Images/";
 		List<Integer> oList2 = new ArrayList<>();
 		Collection<String> filteredImagePaths = Collections2.filter(oList, Predicates.containsPattern(wordToSearchFor));
 		for (String word : filteredImagePaths) {
@@ -165,33 +168,43 @@ public class BinderService {
 		if (null != oDownloadFileRequest.getFileName()) {
 			if (oDownloadFileRequest.getFileName().size() > 1) {
 				File oFile = new File(this.getClass().getClassLoader().getResource("/").getPath()
-						+ oDownloadFileRequest.getBookName() + ".zip");
-				oContentProcessor.getMultipleFileDownload(oDownloadFileRequest.getBookName(),
-						oDownloadFileRequest.getFileName(), oFile);
+						+ oDownloadFileRequest.getClassificationname() + "/" + oDownloadFileRequest.getBookName()
+						+ ".zip");
+				oContentProcessor.getMultipleFileDownload(oDownloadFileRequest.getClassificationname(),
+						oDownloadFileRequest.getBookName(), oDownloadFileRequest.getFileName(), oFile);
 				InputStream fis = new FileInputStream(oFile);
-				CloudStorageConfig.getInstance().uploadFile(
-						CloudPropertiesReader.getInstance().getString("bucket.name"),
-						"/" + oDownloadFileRequest.getBookName() + "/" + oDownloadFileRequest.getBookName() + ".zip",
-						fis, "application/zip");
-				url = CloudStorageConfig.getInstance().getSignedString(
-						CloudPropertiesReader.getInstance().getString("bucket.name"),
-						"/" + oDownloadFileRequest.getBookName() + "/" + oDownloadFileRequest.getBookName() + ".zip");
+				CloudStorageConfig.getInstance()
+						.uploadFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
+								"/" + oDownloadFileRequest.getClassificationname() + "/"
+										+ oDownloadFileRequest.getBookName() + "/" + oDownloadFileRequest.getBookName()
+										+ ".zip",
+								fis, "application/zip");
+				url = CloudStorageConfig.getInstance()
+						.getSignedString(CloudPropertiesReader.getInstance().getString("bucket.name"),
+								"/" + oDownloadFileRequest.getClassificationname() + "/"
+										+ oDownloadFileRequest.getBookName() + "/" + oDownloadFileRequest.getBookName()
+										+ ".zip");
 			} else {
 				url = CloudStorageConfig.getInstance().getSignedString(
 						CloudPropertiesReader.getInstance().getString("bucket.name"),
-						oDownloadFileRequest.getBookName() + "/Contents/" + oDownloadFileRequest.getFileName().get(0));
+						oDownloadFileRequest.getClassificationname() + "/" + oDownloadFileRequest.getBookName()
+								+ "/Contents/" + oDownloadFileRequest.getFileName().get(0));
 			}
 		} else {
 			File oFile = new File(this.getClass().getClassLoader().getResource("/").getPath()
-					+ oDownloadFileRequest.getBookName() + ".zip");
-			oContentProcessor.getZipFile(oDownloadFileRequest.getBookName(), oFile);
+					+ oDownloadFileRequest.getClassificationname() + "/" + oDownloadFileRequest.getBookName() + ".zip");
+			oContentProcessor.getZipFile(oDownloadFileRequest.getClassificationname(),
+					oDownloadFileRequest.getBookName(), oFile);
 			InputStream fis = new FileInputStream(oFile);
 			CloudStorageConfig.getInstance().uploadFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
-					"/" + oDownloadFileRequest.getBookName() + "/" + oDownloadFileRequest.getBookName() + ".zip", fis,
-					"application/zip");
-			url = CloudStorageConfig.getInstance().getSignedString(
-					CloudPropertiesReader.getInstance().getString("bucket.name"),
-					"/" + oDownloadFileRequest.getBookName() + "/" + oDownloadFileRequest.getBookName() + ".zip");
+					"/" + oDownloadFileRequest.getClassificationname() + "/" + oDownloadFileRequest.getBookName() + "/"
+							+ oDownloadFileRequest.getBookName() + ".zip",
+					fis, "application/zip");
+			url = CloudStorageConfig.getInstance()
+					.getSignedString(CloudPropertiesReader.getInstance().getString("bucket.name"),
+							"/" + oDownloadFileRequest.getClassificationname() + "/"
+									+ oDownloadFileRequest.getBookName() + "/" + oDownloadFileRequest.getBookName()
+									+ ".zip");
 		}
 		JSONObject object = new JSONObject();
 		object.put("URL", url);
@@ -210,17 +223,28 @@ public class BinderService {
 			Attachment file2 = multipart.getAttachment("path");
 			Attachment file3 = multipart.getAttachment("type");
 			Attachment file4 = multipart.getAttachment("filename");
+			Attachment classificationName = multipart.getAttachment("classification");
 			String bookName = file1.getObject(String.class);
 			String path = file2.getObject(String.class);
 			String type = file3.getObject(String.class);
 			String fileName = file4.getObject(String.class);
+			String className = classificationName.getObject(String.class);
 			InputStream fileStream = file.getObject(InputStream.class);
+			List<String> oList = CloudStorageConfig.getInstance()
+					.listBucket(CloudPropertiesReader.getInstance().getString("bucket.name"));
+			Collection<String> filteredPath = Collections2.filter(oList,
+					Predicates.containsPattern(classificationName + "/" + bookName + "/Images/"));
+			if (filteredPath != null && !filteredPath.isEmpty()) {
+				CloudStorageConfig.getInstance().deleteFile(
+						CloudPropertiesReader.getInstance().getString("bucket.name"),
+						classificationName + "/" + bookName + "/Images/");
+			}
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			org.apache.commons.io.IOUtils.copy(fileStream, baos);
 			byte[] bytes = baos.toByteArray();
 			ContentProcessor contentProcessor = ContentProcessor.getInstance();
 			ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-			oJsonObject = contentProcessor.processContent(bookName, bais, path, type, fileName);
+			oJsonObject = contentProcessor.processContent(bookName, className, bais, path, type, fileName);
 		} catch (Exception ex) {
 			return Response.status(600).entity(ex.getMessage()).build();
 		}
@@ -241,8 +265,8 @@ public class BinderService {
 	@POST
 	@Path("getBookTreeDetail")
 	@Produces("application/json")
-	public JSONObject BookTreeDetail(String bookName) throws Exception {
-		JSONObject document = BookTreeProcessor.getInstance().processBookXmltoDoc(bookName);
+	public JSONObject BookTreeDetail(String bookName, String classificationName) throws Exception {
+		JSONObject document = BookTreeProcessor.getInstance().processBookXmltoDoc(bookName, classificationName);
 		return document;
 	}
 
@@ -293,7 +317,8 @@ public class BinderService {
 	@Path("addFile")
 	public JSONObject addFiles(AddFileRequest oAddFileRequest) throws Exception {
 		AddFileProcessor oAddFileProcessor = new AddFileProcessor();
-		oAddFileProcessor.updateXML(oAddFileRequest.getBookName(), oAddFileRequest.getoBookRequests());
+		oAddFileProcessor.updateXML(oAddFileRequest.getBookName(), oAddFileRequest.getClassifcationName(),
+				oAddFileRequest.getoBookRequests());
 		JSONObject oJsonObject = new JSONObject();
 		oJsonObject.put("Success", "File Added Successfully");
 		return oJsonObject;
@@ -302,15 +327,17 @@ public class BinderService {
 	@POST
 	@Path("deleteFile")
 	public JSONObject deleteFile(DeleteFileRequest oDeleteFileRequest) throws FileItException {
-		CloudStorageConfig oCloudStorageConfig = new CloudStorageConfig();
+		CloudStorageConfig oCloudStorageConfig = new CloudStorageConfig().getInstance();
 		JSONObject oJsonObject = new JSONObject();
 		Element topicElement = null;
 		InputStream oInputStream1;
-		String path = oDeleteFileRequest.getBookName() + "/Contents/" + oDeleteFileRequest.getFileName();
+		String path = oDeleteFileRequest.getClassificationName() + "/" + oDeleteFileRequest.getBookName() + "/Contents/"
+				+ oDeleteFileRequest.getFileName();
 		oCloudStorageConfig.deleteFile(CloudPropertiesReader.getInstance().getString("bucket.name"), path);
 		if (oDeleteFileRequest.isBookcreated()) {
 			oInputStream1 = oCloudStorageConfig.getFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
-					"files/" + oDeleteFileRequest.getBookName() + ".xml");
+					"files/" + oDeleteFileRequest.getClassificationName() + "/" + oDeleteFileRequest.getBookName()
+							+ ".xml");
 			DocumentBuilderFactory docbf = DocumentBuilderFactory.newInstance();
 			docbf.setNamespaceAware(true);
 
@@ -335,8 +362,11 @@ public class BinderService {
 				Result res = new StreamResult(baos);
 				transformer.transform(domSource, res);
 				InputStream isFromFirstData = new ByteArrayInputStream(baos.toByteArray());
-				oCloudStorageConfig.uploadFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
-						"files/" + oDeleteFileRequest.getBookName() + ".xml", isFromFirstData, "application/xml");
+				oCloudStorageConfig
+						.uploadFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
+								"files/" + oDeleteFileRequest.getClassificationName() + "/"
+										+ oDeleteFileRequest.getBookName() + ".xml",
+								isFromFirstData, "application/xml");
 			} catch (TransformerException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

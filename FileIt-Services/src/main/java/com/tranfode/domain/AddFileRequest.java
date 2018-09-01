@@ -4,6 +4,17 @@ import java.util.List;
 
 public class AddFileRequest {
 	String bookName;
+	
+	String classifcationName;
+	
+	public String getClassifcationName() {
+		return classifcationName;
+	}
+
+	public void setClassifcationName(String classifcationName) {
+		this.classifcationName = classifcationName;
+	}
+
 	List<BookRequests> oBookRequests;
 
 	public String getBookName() {
