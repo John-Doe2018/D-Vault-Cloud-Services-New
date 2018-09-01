@@ -169,8 +169,7 @@ public class BinderService {
 		if (null != oDownloadFileRequest.getFileName()) {
 			if (oDownloadFileRequest.getFileName().size() > 1) {
 				File oFile = new File(this.getClass().getClassLoader().getResource("/").getPath()
-						+ oDownloadFileRequest.getClassificationname() + "/" + oDownloadFileRequest.getBookName()
-						+ ".zip");
+						+ oDownloadFileRequest.getBookName() + ".zip");
 				oContentProcessor.getMultipleFileDownload(oDownloadFileRequest.getClassificationname(),
 						oDownloadFileRequest.getBookName(), oDownloadFileRequest.getFileName(), oFile);
 				InputStream fis = new FileInputStream(oFile);
@@ -193,7 +192,7 @@ public class BinderService {
 			}
 		} else {
 			File oFile = new File(this.getClass().getClassLoader().getResource("/").getPath()
-					+ oDownloadFileRequest.getClassificationname() + "/" + oDownloadFileRequest.getBookName() + ".zip");
+					+ oDownloadFileRequest.getBookName() + ".zip");
 			oContentProcessor.getZipFile(oDownloadFileRequest.getClassificationname(),
 					oDownloadFileRequest.getBookName(), oFile);
 			InputStream fis = new FileInputStream(oFile);
