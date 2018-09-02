@@ -7,7 +7,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,7 +36,6 @@ import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -82,15 +80,14 @@ import com.tranfode.util.FileUtil;
 
 public class BinderService {
 
-	@SuppressWarnings({ "unchecked", "static-access" })
 	@POST
 	@Path("create")
 	public CreateBinderResponse createBinder(CreateBinderRequest createBinderRequest) throws FileItException {
 		CreateBinderResponse createBinderResponse = new CreateBinderResponse();
-		JSONArray bookArray = new JSONArray();
+	//	JSONArray bookArray = new JSONArray();
 		try {
 			FileUtil.checkTestJson();
-			bookArray = FileUtil.checkBookList();
+		//	bookArray = FileUtil.checkBookList();
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -103,11 +100,11 @@ public class BinderService {
 		UpdateMasterJson updateMasterJson = new UpdateMasterJson();
 		updateMasterJson.prepareMasterJson(listOfBinderObj);
 		createBinderResponse.setSuccessMsg("Binder Successfully Created.");
-		FileItContext forBookClassifcation = new FileItContext();
-		bookArray.add(listOfBinderObj.getName());
-		forBookClassifcation.add(BinderConstants.CLASSIFIED_BOOK_LIST, bookArray);
+		//FileItContext forBookClassifcation = new FileItContext();
+		//bookArray.add(listOfBinderObj.getName());
+		//forBookClassifcation.add(BinderConstants.CLASSIFIED_BOOK_LIST, bookArray);
 		JSONObject parentObj = new JSONObject();
-		parentObj.put("Books", bookArray);
+		//parentObj.put("Books", bookArray);
 		InputStream is = new ByteArrayInputStream(parentObj.toJSONString().getBytes());
 		CloudStorageConfig.getInstance().uploadFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
 				CloudFileConstants.BOOKLISTJSON, is, CloudFileConstants.JSONFILETYPE);
@@ -296,9 +293,9 @@ public class BinderService {
 	@POST
 	@Path("advancedSearch")
 	public JSONArray advancedSearch() throws Exception {
-		JSONObject array = null;
+		//JSONObject array = null;
 		JSONArray jsonArray = null;
-		if (FileItContext.get(BinderConstants.CLASSIFIED_BOOK_LIST) != null) {
+		/*if (FileItContext.get(BinderConstants.CLASSIFIED_BOOK_LIST) != null) {
 			jsonArray = (JSONArray) FileItContext.get(BinderConstants.CLASSIFIED_BOOK_LIST);
 		} else {
 			InputStream oInputStream = CloudStorageConfig.getInstance().getFile(
@@ -308,7 +305,7 @@ public class BinderService {
 			jsonArray = (JSONArray) array.get("Books");
 			FileItContext forBookClassifcation = new FileItContext();
 			forBookClassifcation.add(BinderConstants.CLASSIFIED_BOOK_LIST, jsonArray);
-		}
+		}*/
 
 		return jsonArray;
 
