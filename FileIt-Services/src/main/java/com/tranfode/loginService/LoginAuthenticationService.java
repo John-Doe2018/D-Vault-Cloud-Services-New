@@ -5,12 +5,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import com.tranfode.auth.FileItAuthentication;
+import com.tranfode.auth.GetOrValidateUser;
 import com.tranfode.domain.LoginRequest;
 import com.tranfode.domain.LoginResponse;
+import com.tranfode.domain.SignupRequest;
+import com.tranfode.domain.SignupResponse;
+import com.tranfode.processor.ProcessUserDetails;
 import com.tranfode.util.FileItException;
 
 public class LoginAuthenticationService {
-
 
 	@POST
 	@Path("login")
@@ -24,5 +27,18 @@ public class LoginAuthenticationService {
 		return loginResponse;
 	}
 
+	@POST
+	@Path("signup")
+	@Produces("application/json")
+	public SignupResponse createUser(SignupRequest signupRequest) throws FileItException {
+		SignupResponse signupResponse = new SignupResponse();
+		GetOrValidateUser.validateSignUPDetails(signupRequest);
+		boolean createdStatus = false;
+		createdStatus = ProcessUserDetails.processUserDetailsToUserXml(signupRequest);
+		if (createdStatus) {
+			signupResponse.setSignupSuccessMsg("Thank You.User successfully Registered.");
+		}
+		return signupResponse;
+	}
 
 }

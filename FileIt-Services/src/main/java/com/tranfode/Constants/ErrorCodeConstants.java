@@ -7,6 +7,7 @@ public class ErrorCodeConstants {
 	public static final String ERR_CODE_0004 = "ERR_CODE_0004";
 	public static final String ERR_CODE_0005 = "ERR_CODE_0005";
 	public static final String ERR_CODE_0006 = "ERR_CODE_0006";
+	public static final String ERR_CODE_0008 = "ERR_CODE_0008";
 	public static final String ERR_CODE_0010 = "ERR_CODE_0010";
 	
 }
