@@ -16,17 +16,18 @@ import org.json.simple.parser.JSONParser;
 import com.tranfode.Constants.BinderConstants;
 import com.tranfode.Constants.CloudFileConstants;
 import com.tranfode.domain.FileItContext;
-import com.tranfode.util.CloudFilesOperationUtil;
+import com.tranfode.util.CloudPropertiesReader;
+import com.tranfode.util.CloudStorageConfig;
 
 public class PrepareClassificationMap {
-	static CloudFilesOperationUtil cloudFilesOperationUtil = new CloudFilesOperationUtil();
+
 	public static void createClassifiedMap(String masterBook) throws Exception {
 		FileItContext fileItContext = new FileItContext();
 		String classification = null;
 		String bookNameKey = null;
 		Map<String, List<String>> bookWithClassification = new HashMap<String, List<String>>();
-		InputStream fileInputStream = cloudFilesOperationUtil
-				.getFIleInputStream(CloudFileConstants.TESTJSON);
+		InputStream fileInputStream = CloudStorageConfig.getInstance()
+				.getFile(CloudPropertiesReader.getInstance().getString("bucket.name"), CloudFileConstants.TESTJSON);
 		// InputStream fileInputStream = new FileInputStream(jsonFile);
 		JSONParser parser = new JSONParser();
 		JSONObject array = null;
@@ -59,10 +60,12 @@ public class PrepareClassificationMap {
 			JSONObject parentObj = new JSONObject();
 			parentObj.put("BookList", jsonArray1);
 			InputStream is = new ByteArrayInputStream(parentObj.toJSONString().getBytes());
-			cloudFilesOperationUtil.fIleUploaded(CloudFileConstants.TESTJSON, is, CloudFileConstants.JSONFILETYPE);
+			CloudStorageConfig.getInstance().uploadFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
+					CloudFileConstants.TESTJSON, is, CloudFileConstants.JSONFILETYPE);
 		} else if (jsonArray.size() == 0 && FileItContext.get(BinderConstants.CLASSIFIED_BOOK_NAMES) == null) {
-			InputStream oInputStream = cloudFilesOperationUtil
-					.getFIleInputStream(CloudFileConstants.CLASSIFICATIONMAPJSON);
+			InputStream oInputStream = CloudStorageConfig.getInstance().getFile(
+					CloudPropertiesReader.getInstance().getString("bucket.name"),
+					CloudFileConstants.CLASSIFICATIONMAPJSON);
 			JSONObject bookArray = (JSONObject) parser.parse(new InputStreamReader(oInputStream));
 			fileItContext.add(BinderConstants.CLASSIFIED_BOOK_NAMES, bookArray);
 		}
