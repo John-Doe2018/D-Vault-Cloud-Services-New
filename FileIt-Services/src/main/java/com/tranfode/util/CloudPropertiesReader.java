@@ -48,6 +48,10 @@ public class CloudPropertiesReader {
 
 	}
 
+	/**
+	 * @param keyName
+	 * @return
+	 */
 	public String getString(String keyName) {
 		// return String.valueOf(properties.get(keyName));
 		return propertiesMap.get(keyName);

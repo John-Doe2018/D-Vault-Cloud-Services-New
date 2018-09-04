@@ -26,6 +26,10 @@ public class UploadFile {
 	static String name = "Souvik";
 	static String contentType = "application/xml";
 
+	/**
+	 * @param xmlFile
+	 * @throws Exception
+	 */
 	public static void pushFilesToCloudStorage(String xmlFile) throws Exception {
 		// TODO Auto-generated method stub
 
@@ -39,6 +43,12 @@ public class UploadFile {
 		uploadFile(name, xmlFile, bucketName);
 	}
 
+	/**
+	 * @param name
+	 * @param file
+	 * @param bucketName
+	 * @throws IOException
+	 */
 	private static void uploadFile(String name, String file, String bucketName) throws IOException {
 		System.out.println("Entry to this upload file");
 		try {
@@ -74,6 +84,10 @@ public class UploadFile {
 		}
 	}
 
+	/**
+	 * @return
+	 * @throws Exception
+	 */
 	private static Storage getStorage() throws Exception {
 
 		if (storage == null) {

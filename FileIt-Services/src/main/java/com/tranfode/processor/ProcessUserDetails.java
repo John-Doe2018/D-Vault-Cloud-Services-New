@@ -30,6 +30,11 @@ public class ProcessUserDetails {
 
 	private static final FILEITLogger fileItLogger = FILEITLoggerFactory.getLogger(BookTreeProcessor.class);
 
+	/**
+	 * @param signupRequest
+	 * @return
+	 * @throws FileItException
+	 */
 	public static boolean processUserDetailsToUserXml(SignupRequest signupRequest) throws FileItException {
 		fileItLogger.info("Entering to ProcessUserDetails Processor");
 		CloudFilesOperationUtil cloudOperationUtil = new CloudFilesOperationUtil();
@@ -74,6 +79,11 @@ public class ProcessUserDetails {
 		return created;
 	}
 
+	/**
+	 * @param password
+	 * @return
+	 * @throws FileItException
+	 */
 	public static String encryptPassword(String password) throws FileItException {
 		String chipher_Text = AesUtil.Encrypt(password);
 		return chipher_Text;

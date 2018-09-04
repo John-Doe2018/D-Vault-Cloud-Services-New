@@ -15,7 +15,6 @@ import com.tranfode.Constants.ErrorCodeConstants;
 import com.tranfode.domain.AddClassificationResponse;
 import com.tranfode.domain.BusinessErrorData;
 import com.tranfode.util.CloudFilesOperationUtil;
-import com.tranfode.util.CloudStorageConfig;
 import com.tranfode.util.ErrorMessageReader;
 import com.tranfode.util.FileItException;
 
@@ -33,6 +32,12 @@ public class AddClassificationProcessor {
 		return addClassProcessor;
 	}
 
+	/**
+	 * @param classificationName
+	 * @param addClassificationResponse
+	 * @return
+	 * @throws FileItException
+	 */
 	@SuppressWarnings("unchecked")
 	public AddClassificationResponse addClassification(String classificationName,
 			AddClassificationResponse addClassificationResponse) throws FileItException {
@@ -50,7 +55,8 @@ public class AddClassificationProcessor {
 				jsonArray.add(classificationName);
 				array.put("classificationList", jsonArray);
 				InputStream is = new ByteArrayInputStream(array.toJSONString().getBytes());
-				cloudFilesOperationUtil.fIleUploaded(CloudFileConstants.CLASSIFICATIONLISTJSON, is, CloudFileConstants.JSONFILETYPE);
+				cloudFilesOperationUtil.fIleUploaded(CloudFileConstants.CLASSIFICATIONLISTJSON, is,
+						CloudFileConstants.JSONFILETYPE);
 				oAddClassificationResponse.setSuccessMsg("Classification Created Successfully");
 			} else {
 				BusinessErrorData oBusinessErrorData = new BusinessErrorData();
@@ -66,6 +72,10 @@ public class AddClassificationProcessor {
 
 	}
 
+	/**
+	 * @return
+	 * @throws FileItException
+	 */
 	@SuppressWarnings("unchecked")
 	public List<String> getClassifications() throws FileItException {
 		List<String> classifcations = new ArrayList<String>();

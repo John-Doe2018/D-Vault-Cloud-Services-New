@@ -22,6 +22,9 @@ public class BookMarkUtil {
 
 	public static BookMarkUtil bookMark;
 
+	/**
+	 * @return
+	 */
 	public static BookMarkUtil getInstance() {
 		if (bookMark == null) {
 			bookMark = new BookMarkUtil();
@@ -29,6 +32,13 @@ public class BookMarkUtil {
 		return bookMark;
 	}
 
+	/**
+	 * @param loggedInUser
+	 * @param bookName
+	 * @param classificationName
+	 * @return
+	 * @throws FileItException
+	 */
 	public BookMarkDetails saveUserBookMarkDetails(String loggedInUser, String bookName, String classificationName)
 			throws FileItException {
 		BookMarkDetails bookMarkDetails = new BookMarkDetails();
@@ -43,6 +53,10 @@ public class BookMarkUtil {
 		return bookMarkDetails;
 	}
 
+	/**
+	 * @param bookMarkDetails
+	 * @throws FileItException
+	 */
 	@SuppressWarnings("unchecked")
 	public void WriteBookMarkDetails(BookMarkDetails bookMarkDetails) throws FileItException {
 		Map<String, List<BookClassMap>> bookMarkDetailMap = new HashMap<String, List<BookClassMap>>();
@@ -67,7 +81,7 @@ public class BookMarkUtil {
 				String json = gson.toJson(bookMarkDetailMap);
 				JSONObject bookArray = (JSONObject) parser.parse(new InputStreamReader(inputStream));
 				JSONArray newBookClassListObj = (JSONArray) bookArray.get(bookMarkDetails.getUserName());
-				if(null != newBookClassListObj) {
+				if (null != newBookClassListObj) {
 					// Check for already added bookName in the same classification
 					for (int i = 0; i < newUserBookClassListObj.size(); i++) {
 						JSONObject json_data = (JSONObject) newUserBookClassListObj.get(i);
@@ -79,13 +93,13 @@ public class BookMarkUtil {
 							} else {
 								isBookmark = false;
 							}
-						}else {
+						} else {
 							isBookmark = false;
 						}
 					}
-					}else {
-						isNewUserBookmark = true;
-					}
+				} else {
+					isNewUserBookmark = true;
+				}
 				if (!isBookmark) {
 					newBookClassListObj.add(bookClassMap);
 					bookArray.put(bookMarkDetails.getUserName(), newUserBookClassListObj);
@@ -94,7 +108,7 @@ public class BookMarkUtil {
 					InputStream is = new ByteArrayInputStream(jsonmap.getBytes());
 					oCloudStorageConfig.uploadFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
 							"BookMarkDetails.JSON", is, "application/json");
-				}else if(isNewUserBookmark){
+				} else if (isNewUserBookmark) {
 					newUserBookClassListObj.add(bookClassMap);
 					bookArray.put(bookMarkDetails.getUserName(), newUserBookClassListObj);
 					Gson gsonmap = new Gson();
@@ -118,16 +132,20 @@ public class BookMarkUtil {
 
 	}
 
-	public List<BookMarkDetails> getBookMarks(String loggedInUser)
-			throws FileItException {
+	/**
+	 * @param loggedInUser
+	 * @return
+	 * @throws FileItException
+	 */
+	public List<BookMarkDetails> getBookMarks(String loggedInUser) throws FileItException {
 		BookMarkDetails bookMarkDetails = new BookMarkDetails();
 		List<BookMarkDetails> bookMarkDetailsList = new ArrayList<BookMarkDetails>();
 		CloudStorageConfig oCloudStorageConfig = new CloudStorageConfig();
 		JSONParser parser = new JSONParser();
 		InputStream inputStream;
-		if (loggedInUser != null ) {
+		if (loggedInUser != null) {
 			bookMarkDetails.setUserName(loggedInUser);
-		} else if (loggedInUser == null ) {
+		} else if (loggedInUser == null) {
 			throw new FileItException("Something went wrong.BookMark can not be added");
 		}
 		inputStream = oCloudStorageConfig.getFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
@@ -141,7 +159,7 @@ public class BookMarkUtil {
 					JSONObject json_data = (JSONObject) newBookClassListObj.get(i);
 					String bookname = (String) json_data.get("bookName");
 					String classificationName = (String) json_data.get("classification");
-					BookMarkDetails bookMarkDetail = new BookMarkDetails();		
+					BookMarkDetails bookMarkDetail = new BookMarkDetails();
 					bookMarkDetail.setBookName(bookname);
 					bookMarkDetail.setClassification(classificationName);
 					bookMarkDetail.setUserName(loggedInUser);

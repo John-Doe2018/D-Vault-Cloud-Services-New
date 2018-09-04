@@ -19,6 +19,11 @@ import com.tranfode.util.FileUtil;
 import com.tranfode.util.ReadJsonUtil;
 
 public class UpdateMasterJson {
+	/**
+	 * @param bookObject
+	 * @return
+	 * @throws FileItException
+	 */
 	@SuppressWarnings("unchecked")
 	public String prepareMasterJson(BinderList bookObject) throws FileItException {
 		JSONParser parser = new JSONParser();

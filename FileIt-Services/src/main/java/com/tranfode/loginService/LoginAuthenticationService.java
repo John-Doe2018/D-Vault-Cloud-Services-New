@@ -15,6 +15,11 @@ import com.tranfode.util.FileItException;
 
 public class LoginAuthenticationService {
 
+	/**
+	 * @param loginRequest
+	 * @return
+	 * @throws FileItException
+	 */
 	@POST
 	@Path("login")
 	@Produces("application/json")
@@ -27,6 +32,11 @@ public class LoginAuthenticationService {
 		return loginResponse;
 	}
 
+	/**
+	 * @param signupRequest
+	 * @return
+	 * @throws FileItException
+	 */
 	@POST
 	@Path("signup")
 	@Produces("application/json")

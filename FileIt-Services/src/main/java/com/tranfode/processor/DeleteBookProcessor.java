@@ -20,10 +20,16 @@ import com.tranfode.util.FileItException;
 
 public class DeleteBookProcessor {
 	static CloudFilesOperationUtil cloudFilesOperationUtil = new CloudFilesOperationUtil();
+
+	/**
+	 * @param deleteBookRequest
+	 * @param classificationName
+	 * @return
+	 * @throws Exception
+	 */
 	@SuppressWarnings("unchecked")
 	public JSONObject deleteBookProcessor(String deleteBookRequest, String classificationName) throws Exception {
 		CloudStorageConfig oCloudStorageConfig = new CloudStorageConfig();
-		JSONObject parentObj = new JSONObject();
 		JSONObject deleteMsg = new JSONObject();
 		InputStream oInputStream = cloudFilesOperationUtil.getFIleInputStream(CloudFileConstants.CLASSIFICATIONMAPJSON);
 		JSONParser parser = new JSONParser();
@@ -38,7 +44,8 @@ public class DeleteBookProcessor {
 				array.put(classificationName, bookList);
 			}
 			InputStream is = new ByteArrayInputStream(array.toJSONString().getBytes());
-			cloudFilesOperationUtil.fIleUploaded(CloudFileConstants.CLASSIFICATIONMAPJSON, is, CloudFileConstants.JSONFILETYPE);
+			cloudFilesOperationUtil.fIleUploaded(CloudFileConstants.CLASSIFICATIONMAPJSON, is,
+					CloudFileConstants.JSONFILETYPE);
 			FileItContext.remove(BinderConstants.CLASSIFIED_BOOK_NAMES);
 			FileItContext.add(BinderConstants.CLASSIFIED_BOOK_NAMES, array);
 			oInputStream.close();
@@ -49,9 +56,9 @@ public class DeleteBookProcessor {
 		}
 		List<String> oList = oCloudStorageConfig
 				.listBucket(CloudPropertiesReader.getInstance().getString("bucket.name"));
-		String wordToSearchFor = classificationName+"/"+deleteBookRequest + "/Images";
-		String contentName = classificationName+"/"+deleteBookRequest + "/Contents";
-		String xmlName = "files/" +classificationName+"/"+ deleteBookRequest + ".xml";
+		String wordToSearchFor = classificationName + "/" + deleteBookRequest + "/Images";
+		String contentName = classificationName + "/" + deleteBookRequest + "/Contents";
+		String xmlName = "files/" + classificationName + "/" + deleteBookRequest + ".xml";
 		for (String word : oList) {
 			if (word.contains(wordToSearchFor) || word.contains(contentName) || word.contains(xmlName)) {
 				oCloudStorageConfig.deleteFile(CloudPropertiesReader.getInstance().getString("bucket.name"), word);

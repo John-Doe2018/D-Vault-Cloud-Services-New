@@ -17,16 +17,26 @@ import com.tranfode.util.FileItException;
 
 public class LookupBookProcessor {
 	private static LookupBookProcessor INSTANCE;
+
+	/**
+	 * @return
+	 */
 	public static synchronized LookupBookProcessor getInstance() {
-			if (null == INSTANCE) {
-				INSTANCE = new LookupBookProcessor();
-			}
-			return INSTANCE;
+		if (null == INSTANCE) {
+			INSTANCE = new LookupBookProcessor();
 		}
+		return INSTANCE;
+	}
+
 	static CloudFilesOperationUtil cloudFilesOperationUtil = new CloudFilesOperationUtil();
+
+	/**
+	 * @param bookName
+	 * @return
+	 * @throws Exception
+	 */
 	public static JSONObject lookupBookbyName(String bookName) throws Exception {
-		InputStream oInputStream = cloudFilesOperationUtil
-				.getFIleInputStream(CloudFileConstants.BOOKLISTJSON);
+		InputStream oInputStream = cloudFilesOperationUtil.getFIleInputStream(CloudFileConstants.BOOKLISTJSON);
 		JSONParser parser = new JSONParser();
 		String book = null;
 		boolean bookNameFound = false;

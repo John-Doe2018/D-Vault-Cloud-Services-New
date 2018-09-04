@@ -80,15 +80,17 @@ import com.tranfode.util.FileUtil;
 
 public class BinderService {
 
+	/**
+	 * @param createBinderRequest
+	 * @return
+	 * @throws FileItException
+	 */
 	@POST
 	@Path("create")
 	public CreateBinderResponse createBinder(CreateBinderRequest createBinderRequest) throws FileItException {
 		CreateBinderResponse createBinderResponse = new CreateBinderResponse();
-	//	JSONArray bookArray = new JSONArray();
 		try {
 			FileUtil.checkTestJson();
-		//	bookArray = FileUtil.checkBookList();
-
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -100,17 +102,18 @@ public class BinderService {
 		UpdateMasterJson updateMasterJson = new UpdateMasterJson();
 		updateMasterJson.prepareMasterJson(listOfBinderObj);
 		createBinderResponse.setSuccessMsg("Binder Successfully Created.");
-		//FileItContext forBookClassifcation = new FileItContext();
-		//bookArray.add(listOfBinderObj.getName());
-		//forBookClassifcation.add(BinderConstants.CLASSIFIED_BOOK_LIST, bookArray);
 		JSONObject parentObj = new JSONObject();
-		//parentObj.put("Books", bookArray);
 		InputStream is = new ByteArrayInputStream(parentObj.toJSONString().getBytes());
 		CloudStorageConfig.getInstance().uploadFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
 				CloudFileConstants.BOOKLISTJSON, is, CloudFileConstants.JSONFILETYPE);
 		return createBinderResponse;
 	}
 
+	/**
+	 * @param oGetImageRequest
+	 * @return
+	 * @throws Exception
+	 */
 	@POST
 	@Path("getImage")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -137,6 +140,8 @@ public class BinderService {
 		}
 		String wordToSearchFor = oGetImageRequest.getClassification() + "/" + oGetImageRequest.getBookName()
 				+ "/Images/";
+		oList = CloudStorageConfig.getInstance()
+				.listBucket(CloudPropertiesReader.getInstance().getString("bucket.name"));
 		List<Integer> oList2 = new ArrayList<>();
 		Collection<String> filteredImagePaths = Collections2.filter(oList, Predicates.containsPattern(wordToSearchFor));
 		for (String word : filteredImagePaths) {
@@ -156,6 +161,11 @@ public class BinderService {
 		return oImages;
 	}
 
+	/**
+	 * @param oDownloadFileRequest
+	 * @return
+	 * @throws Exception
+	 */
 	@POST
 	@Path("download")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -208,6 +218,11 @@ public class BinderService {
 		return object;
 	}
 
+	/**
+	 * @param multipart
+	 * @return
+	 * @throws Exception
+	 */
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -248,6 +263,11 @@ public class BinderService {
 		return Response.status(200).entity(oJsonObject).build();
 	}
 
+	/**
+	 * @param deleteBookRequest
+	 * @return
+	 * @throws Exception
+	 */
 	@POST
 	@Path("delete")
 	@Produces("application/json")
@@ -259,6 +279,11 @@ public class BinderService {
 		return succssMsg;
 	}
 
+	/**
+	 * @param oGetBookTreeRequest
+	 * @return
+	 * @throws Exception
+	 */
 	@POST
 	@Path("getBookTreeDetail")
 	@Produces("application/json")
@@ -268,6 +293,13 @@ public class BinderService {
 		return document;
 	}
 
+	/**
+	 * @param pathName
+	 * @return
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	@POST
 	@Path("getPDF")
 	@Produces("application/pdf")
@@ -279,6 +311,11 @@ public class BinderService {
 		return response.build();
 	}
 
+	/**
+	 * @param searchBookRequest
+	 * @return
+	 * @throws Exception
+	 */
 	@POST
 	@Path("searchBook")
 	public SearchBookResponse searchBook(SearchBookRequest searchBookRequest) throws Exception {
@@ -290,27 +327,37 @@ public class BinderService {
 		return bookResponse;
 	}
 
+	/**
+	 * @return
+	 * @throws Exception
+	 */
 	@POST
 	@Path("advancedSearch")
 	public JSONArray advancedSearch() throws Exception {
-		//JSONObject array = null;
+		// JSONObject array = null;
 		JSONArray jsonArray = null;
-		/*if (FileItContext.get(BinderConstants.CLASSIFIED_BOOK_LIST) != null) {
-			jsonArray = (JSONArray) FileItContext.get(BinderConstants.CLASSIFIED_BOOK_LIST);
-		} else {
-			InputStream oInputStream = CloudStorageConfig.getInstance().getFile(
-					CloudPropertiesReader.getInstance().getString("bucket.name"), CloudFileConstants.BOOKLISTJSON);
-			JSONParser parser = new JSONParser();
-			array = (JSONObject) parser.parse(new InputStreamReader(oInputStream));
-			jsonArray = (JSONArray) array.get("Books");
-			FileItContext forBookClassifcation = new FileItContext();
-			forBookClassifcation.add(BinderConstants.CLASSIFIED_BOOK_LIST, jsonArray);
-		}*/
+		/*
+		 * if (FileItContext.get(BinderConstants.CLASSIFIED_BOOK_LIST) != null) {
+		 * jsonArray = (JSONArray)
+		 * FileItContext.get(BinderConstants.CLASSIFIED_BOOK_LIST); } else { InputStream
+		 * oInputStream = CloudStorageConfig.getInstance().getFile(
+		 * CloudPropertiesReader.getInstance().getString("bucket.name"),
+		 * CloudFileConstants.BOOKLISTJSON); JSONParser parser = new JSONParser(); array
+		 * = (JSONObject) parser.parse(new InputStreamReader(oInputStream)); jsonArray =
+		 * (JSONArray) array.get("Books"); FileItContext forBookClassifcation = new
+		 * FileItContext();
+		 * forBookClassifcation.add(BinderConstants.CLASSIFIED_BOOK_LIST, jsonArray); }
+		 */
 
 		return jsonArray;
 
 	}
 
+	/**
+	 * @param oAddFileRequest
+	 * @return
+	 * @throws Exception
+	 */
 	@POST
 	@Path("addFile")
 	public JSONObject addFiles(AddFileRequest oAddFileRequest) throws Exception {
@@ -322,6 +369,11 @@ public class BinderService {
 		return oJsonObject;
 	}
 
+	/**
+	 * @param oDeleteFileRequest
+	 * @return
+	 * @throws FileItException
+	 */
 	@POST
 	@Path("deleteFile")
 	public JSONObject deleteFile(DeleteFileRequest oDeleteFileRequest) throws FileItException {
@@ -384,6 +436,10 @@ public class BinderService {
 		return oJsonObject;
 	}
 
+	/**
+	 * @return
+	 * @throws Exception
+	 */
 	@POST
 	@Path("classifiedData")
 	public JSONObject getBookClassification() throws Exception {
@@ -391,6 +447,11 @@ public class BinderService {
 
 	}
 
+	/**
+	 * @param addClassificationRequest
+	 * @return
+	 * @throws FileItException
+	 */
 	@POST
 	@Path("addClassification")
 	public AddClassificationResponse addBookClassification(AddClassificationRequest addClassificationRequest)
@@ -407,6 +468,10 @@ public class BinderService {
 		return addClassificationResponse;
 	}
 
+	/**
+	 * @return
+	 * @throws FileItException
+	 */
 	@GET
 	@Path("getClassification")
 	public List<String> getClassifications() throws FileItException {
@@ -420,6 +485,11 @@ public class BinderService {
 		return getClassifications;
 	}
 
+	/**
+	 * @param bookMarkRequest
+	 * @return
+	 * @throws FileItException
+	 */
 	@POST
 	@Path("tagBook")
 	public BookMarkResponse bookMark(BookMarkRequest bookMarkRequest) throws FileItException {
@@ -435,6 +505,11 @@ public class BinderService {
 
 	}
 
+	/**
+	 * @param bookMarkRequest
+	 * @return
+	 * @throws FileItException
+	 */
 	@POST
 	@Path("getBookMarks")
 	public BookMarkResponse getBookMarks(BookMarkRequest bookMarkRequest) throws FileItException {

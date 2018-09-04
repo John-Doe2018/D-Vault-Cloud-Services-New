@@ -21,6 +21,10 @@ import com.tranfode.util.CloudStorageConfig;
 
 public class PrepareClassificationMap {
 
+	/**
+	 * @param masterBook
+	 * @throws Exception
+	 */
 	public static void createClassifiedMap(String masterBook) throws Exception {
 		FileItContext fileItContext = new FileItContext();
 		String classification = null;

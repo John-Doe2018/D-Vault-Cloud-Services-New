@@ -46,7 +46,7 @@ public class CloudStorageConfig {
 		}
 		return cstCnf;
 	}
-	
+
 	private Properties properties;
 	private Storage storage;
 	private static final String PROJECT_ID_PROPERTY = "project.id";
@@ -58,6 +58,10 @@ public class CloudStorageConfig {
 	private String expiryTime;
 
 	// Get private key object from unencrypted PKCS#8 file content
+	/**
+	 * @return
+	 * @throws FileItException
+	 */
 	private PrivateKey getPrivateKey() throws FileItException {
 		// Remove extra characters in private key.
 		String realPK = getProperties().getProperty(PRIVATE_KEY).replaceAll("-----END PRIVATE KEY-----", "")
@@ -98,6 +102,10 @@ public class CloudStorageConfig {
 		return storage;
 	}
 
+	/**
+	 * @return
+	 * @throws FileItException
+	 */
 	private Properties getProperties() throws FileItException {
 
 		if (properties == null) {
@@ -153,6 +161,12 @@ public class CloudStorageConfig {
 		}
 	}
 
+	/**
+	 * @param bucketName
+	 * @param fileName
+	 * @param destinationDirectory
+	 * @throws FileItException
+	 */
 	public void downloadFile(String bucketName, String fileName, String destinationDirectory) throws FileItException {
 
 		File directory = new File(destinationDirectory);
@@ -172,6 +186,12 @@ public class CloudStorageConfig {
 		}
 	}
 
+	/**
+	 * @param bucketName
+	 * @param filePath
+	 * @return
+	 * @throws FileItException
+	 */
 	public InputStream getFile(String bucketName, String filePath) throws FileItException {
 		setExpiryTimeInEpoch();
 		InputStream getOutput = null;
@@ -192,6 +212,12 @@ public class CloudStorageConfig {
 		return getOutput;
 	}
 
+	/**
+	 * @param bucketName
+	 * @param filePath
+	 * @return
+	 * @throws Exception
+	 */
 	public String getSignedString(String bucketName, String filePath) throws Exception {
 		setExpiryTimeForImage();
 		String stringToSign = getSignInput(filePath);
@@ -310,6 +336,11 @@ public class CloudStorageConfig {
 		return list;
 	}
 
+	/**
+	 * @param url
+	 * @return
+	 * @throws IOException
+	 */
 	private InputStream sendGet(String url) throws IOException {
 		URL obj;
 		HttpURLConnection con;
@@ -331,18 +362,30 @@ public class CloudStorageConfig {
 
 	}
 
+	/**
+	 * 
+	 */
 	private void setExpiryTimeInEpoch() {
 		long now = System.currentTimeMillis();
 		long expiredTimeInSeconds = (now + 120 * 1000L) / 1000;
 		expiryTime = expiredTimeInSeconds + "";
 	}
 
+	/**
+	 * 
+	 */
 	private void setExpiryTimeForImage() {
 		long now = System.currentTimeMillis();
 		long expiredTimeInSeconds = (now + 20000 * 1000L) / 1000;
 		expiryTime = expiredTimeInSeconds + "";
 	}
 
+	/**
+	 * @param signedString
+	 * @param objectPath
+	 * @return
+	 * @throws FileItException
+	 */
 	private String getSignedUrl(String signedString, String objectPath) throws FileItException {
 		String signedUrl = getProperties().getProperty(API_URL) + '/' + getProperties().getProperty(BUCKET_NAME) + '/'
 				+ objectPath + "?GoogleAccessId=" + getProperties().getProperty(ACCOUNT_ID_PROPERTY) + "&Expires="
@@ -350,11 +393,22 @@ public class CloudStorageConfig {
 		return signedUrl;
 	}
 
+	/**
+	 * @param objectPath
+	 * @return
+	 * @throws FileItException
+	 */
 	private String getSignInput(String objectPath) throws FileItException {
 		return "GET" + "\n" + "" + "\n" + "" + "\n" + expiryTime + "\n" + '/' + getProperties().getProperty(BUCKET_NAME)
 				+ '/' + objectPath;
 	}
 
+	/**
+	 * @param input
+	 * @param pk
+	 * @return
+	 * @throws FileItException
+	 */
 	private String getSignedString(String input, PrivateKey pk) throws FileItException {
 		Signature privateSignature;
 		byte[] s = null;

@@ -35,11 +35,20 @@ public class TransformationProcessor {
 	FileItContext fileItContext;
 	List<String> pathNamesList = new ArrayList<String>();
 
+	/**
+	 * @param binderObject
+	 * @return
+	 * @throws FileItException
+	 */
 	public boolean processHtmlToBinderXml(BinderList binderObject) throws FileItException {
 		prepareBinderXML(binderObject);
 		return true;
 	}
 
+	/**
+	 * @param binderlist
+	 * @throws FileItException
+	 */
 	public void prepareBinderXML(BinderList binderlist) throws FileItException {
 		CloudStorageConfig oCloudStorageConfig = new CloudStorageConfig();
 		String bucketName = CloudPropertiesReader.getInstance().getString("bucket.name");
@@ -96,7 +105,8 @@ public class TransformationProcessor {
 			Result res = new StreamResult(baos);
 			transformer.transform(domSource, res);
 			InputStream isFromFirstData = new ByteArrayInputStream(baos.toByteArray());
-			oCloudStorageConfig.uploadFile(bucketName, "files/" +binderlist.getClassification() + "/"+ binderlist.getName() + ".xml", isFromFirstData,
+			oCloudStorageConfig.uploadFile(bucketName,
+					"files/" + binderlist.getClassification() + "/" + binderlist.getName() + ".xml", isFromFirstData,
 					"application/xml");
 		} catch (Exception e) {
 			throw new FileItException(e.getMessage());
@@ -104,6 +114,11 @@ public class TransformationProcessor {
 
 	}
 
+	/**
+	 * @param htmlContent
+	 * @return
+	 * @throws FileItException
+	 */
 	public BinderList createBinderList(String htmlContent) throws FileItException {
 		BinderList binderObject = null;
 		ObjectMapper objectMapper = new ObjectMapper();

@@ -19,6 +19,11 @@ import com.tranfode.util.CloudFilesOperationUtil;
 
 public class WriteClassificationMap {
 	static CloudFilesOperationUtil cloudFilesOperationUtil = new CloudFilesOperationUtil();
+
+	/**
+	 * @param classifiedBook
+	 * @throws Exception
+	 */
 	@SuppressWarnings("static-access")
 	public static void writeClassificationMap(Map<String, List<String>> classifiedBook) throws Exception {
 		String classification = null;
@@ -30,7 +35,8 @@ public class WriteClassificationMap {
 			bookClassification = checkifClassPresent(classification, bookList);
 			if (bookClassification.isClassification()) {
 				InputStream is = new ByteArrayInputStream(bookClassification.getJsonArray().toJSONString().getBytes());
-				cloudFilesOperationUtil.fIleUploaded(CloudFileConstants.CLASSIFICATIONMAPJSON, is, CloudFileConstants.JSONFILETYPE);
+				cloudFilesOperationUtil.fIleUploaded(CloudFileConstants.CLASSIFICATIONMAPJSON, is,
+						CloudFileConstants.JSONFILETYPE);
 				FileItContext forBookClassifcation = new FileItContext();
 				forBookClassifcation.remove(BinderConstants.CLASSIFIED_BOOK_NAMES);
 				forBookClassifcation.add(BinderConstants.CLASSIFIED_BOOK_NAMES, bookClassification.getJsonArray());
@@ -40,6 +46,12 @@ public class WriteClassificationMap {
 		}
 	}
 
+	/**
+	 * @param classificationName
+	 * @param bookList
+	 * @return
+	 * @throws Exception
+	 */
 	public static BookClassification checkifClassPresent(String classificationName, List<String> bookList)
 			throws Exception {
 		InputStream oInputStream;

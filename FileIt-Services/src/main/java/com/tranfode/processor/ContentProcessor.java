@@ -45,6 +45,9 @@ public class ContentProcessor {
 	private static ContentProcessor INSTANCE;
 	static CloudFilesOperationUtil cloudFilesOperationUtil = new CloudFilesOperationUtil();
 
+	/**
+	 * @return
+	 */
 	public static synchronized ContentProcessor getInstance() {
 		if (null == INSTANCE) {
 			INSTANCE = new ContentProcessor();
@@ -52,6 +55,16 @@ public class ContentProcessor {
 		return INSTANCE;
 	}
 
+	/**
+	 * @param bookName
+	 * @param inputFile
+	 * @param path
+	 * @param type
+	 * @param fileName
+	 * @param pagecounter
+	 * @return
+	 * @throws FileItException
+	 */
 	@SuppressWarnings("unchecked")
 	public int processContentImage(String bookName, InputStream inputFile, String path, String type, String fileName,
 			int pagecounter) throws FileItException {
@@ -124,20 +137,8 @@ public class ContentProcessor {
 					oJsonArray.add(path + pagecounter + BinderConstants.IMG_EXTENSION);
 				}
 				oJsonObject.put("Success", "File Uploaded Successfully");
-				/*
-				 * long lEndTime = System.currentTimeMillis(); long output = lEndTime -
-				 * lStartTime; System.out.println("Timing in ImageCOnersion in  MilliSeconds"+
-				 * output);
-				 */
 			}
-			/*
-			 * long lStartTime = System.currentTimeMillis(); InputStream is = new
-			 * ByteArrayInputStream(oJsonArray.toJSONString().getBytes());
-			 * cloudFilesOperationUtil.fIleUploaded("files/" + fileName.subSequence(0,
-			 * fileName.lastIndexOf('.')) + ".JSON",is,CloudFileConstants.JSONFILETYPE);
-			 * long lEndTime = System.currentTimeMillis(); long output = lEndTime -
-			 * lStartTime; System.out.println("Timing in individualJSON"+ output);
-			 */ } catch (IOException e) {
+		} catch (IOException e) {
 			throw new FileItException(e.getMessage());
 		} catch (Exception e) {
 			throw new FileItException(e.getMessage());
@@ -145,6 +146,12 @@ public class ContentProcessor {
 		return pagecounter;
 	}
 
+	/**
+	 * @param i
+	 * @param bookName
+	 * @param extension
+	 * @return
+	 */
 	public static String createDyanmicImagePath(int i, String bookName, String extension) {
 		boolean isDirectory = false;
 		String fullContentDirectory = null;
@@ -162,6 +169,16 @@ public class ContentProcessor {
 		return absoluteImgPath;
 	}
 
+	/**
+	 * @param bookName
+	 * @param classificationName
+	 * @param inputFile
+	 * @param path
+	 * @param type
+	 * @param fileName
+	 * @return
+	 * @throws FileItException
+	 */
 	public JSONObject processContent(String bookName, String classificationName, InputStream inputFile, String path,
 			String type, String fileName) throws FileItException {
 		JSONObject oJsonObject = new JSONObject();
@@ -179,6 +196,14 @@ public class ContentProcessor {
 		return oJsonObject;
 	}
 
+	/**
+	 * @param classificationame
+	 * @param bookname
+	 * @param filename
+	 * @param oFile
+	 * @throws FileItException
+	 * @throws IOException
+	 */
 	public void getMultipleFileDownload(String classificationame, String bookname, List<String> filename, File oFile)
 			throws FileItException, IOException {
 		FileOutputStream fos = new FileOutputStream(oFile);
@@ -203,6 +228,13 @@ public class ContentProcessor {
 		zos.close();
 	}
 
+	/**
+	 * @param classificationname
+	 * @param bookName
+	 * @param oFile
+	 * @throws FileItException
+	 * @throws IOException
+	 */
 	public void getZipFile(String classificationname, String bookName, File oFile) throws FileItException, IOException {
 		FileOutputStream fos = new FileOutputStream(oFile);
 		ZipOutputStream zos = new ZipOutputStream(fos);
