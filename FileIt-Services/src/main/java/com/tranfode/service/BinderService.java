@@ -9,9 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -128,42 +126,26 @@ public class BinderService {
 		String wordToSearchFor1 = oGetImageRequest.getClassification() + '/' + oGetImageRequest.getBookName() + '/'
 				+ "Contents/";
 		List<String> oImages = new ArrayList<>();
-		int pagecounter = 0;
 		List<String> oList = CloudStorageConfig.getInstance()
 				.listBucket(CloudPropertiesReader.getInstance().getString("bucket.name"));
 		Collection<String> filtered = Collections2.filter(oList, Predicates.containsPattern(wordToSearchFor1));
 		System.out.println("List...." + filtered);
+		JSONObject detailsObj = new JSONObject();
+		detailsObj.put("pageCount", 0);
+		detailsObj.put("imageMapList", oImages);
 		for (String word1 : filtered) {
 
 			String extension = FilenameUtils.getExtension(word1);
 			String fileName = FilenameUtils.getName(word1);
 			fis = CloudStorageConfig.getInstance().getFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
 					word1);
-			pagecounter = ContentProcessor.getInstance().processContentImage(oGetImageRequest.getBookName(), fis,
+			detailsObj = ContentProcessor.getInstance().processContentImage(oGetImageRequest.getBookName(), fis,
 					oGetImageRequest.getClassification() + "/" + oGetImageRequest.getBookName() + "/Images/", extension,
-					fileName, pagecounter);
+					fileName, Integer.valueOf(detailsObj.get("pageCount").toString()),
+					(List<String>) detailsObj.get("imageMapList"));
 		}
-		String wordToSearchFor = oGetImageRequest.getClassification() + "/" + oGetImageRequest.getBookName()
-				+ "/Images/";
-		oList = CloudStorageConfig.getInstance()
-				.listBucket(CloudPropertiesReader.getInstance().getString("bucket.name"));
-		List<Integer> oList2 = new ArrayList<>();
-		Collection<String> filteredImagePaths = Collections2.filter(oList, Predicates.containsPattern(wordToSearchFor));
-		for (String word : filteredImagePaths) {
-			oList2.add(Integer.valueOf(word.substring(word.indexOf("Images/") + 7, word.indexOf(".jpeg"))));
-		}
-		Collections.sort(oList2);
-		long lStartTime = System.currentTimeMillis();
-		TimeUnit.SECONDS.sleep(2);
-		for (int j = 0; j < oList2.size(); j++) {
-			oImages.add(CloudStorageConfig.getInstance().getSignedString(
-					CloudPropertiesReader.getInstance().getString("bucket.name"),
-					wordToSearchFor + oList2.get(j).toString() + ".jpeg"));
-		}
-		long lEndTime = System.currentTimeMillis();
-		long output = lEndTime - lStartTime;
-		System.out.println("Timing in MilliSeconds" + output);
-		return oImages;
+
+		return (List<String>) detailsObj.get("imageMapList");
 	}
 
 	/**

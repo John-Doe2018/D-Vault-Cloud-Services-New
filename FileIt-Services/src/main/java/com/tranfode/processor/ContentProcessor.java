@@ -27,7 +27,6 @@ import org.apache.poi.xslf.usermodel.XSLFSlide;
 import org.apache.poi.xwpf.converter.pdf.PdfConverter;
 import org.apache.poi.xwpf.converter.pdf.PdfOptions;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import com.tranfode.Constants.BinderConstants;
@@ -66,11 +65,10 @@ public class ContentProcessor {
 	 * @throws FileItException
 	 */
 	@SuppressWarnings("unchecked")
-	public int processContentImage(String bookName, InputStream inputFile, String path, String type, String fileName,
-			int pagecounter) throws FileItException {
+	public JSONObject processContentImage(String bookName, InputStream inputFile, String path, String type,
+			String fileName, int pagecounter, List<String> oImages) throws FileItException {
 		JSONObject oJsonObject = new JSONObject();
 		PDDocument document = null;
-		JSONArray oJsonArray = new JSONArray();
 		System.setProperty("org.apache.pdfbox.baseParser.pushBackSize", "999000");
 		try {
 			if (type.equalsIgnoreCase("docx")) {
@@ -91,11 +89,14 @@ public class ContentProcessor {
 					InputStream is = new ByteArrayInputStream(os.toByteArray());
 					cloudFilesOperationUtil.fIleUploaded(path + pagecounter + BinderConstants.IMG_EXTENSION, is,
 							CloudFileConstants.IMGFILETYPE);
-					oJsonArray.add(path + pagecounter + BinderConstants.IMG_EXTENSION);
+					oImages.add(CloudStorageConfig.getInstance().getSignedString(
+							CloudPropertiesReader.getInstance().getString("bucket.name"),
+							path + pagecounter + BinderConstants.IMG_EXTENSION));
 					is.close();
 					os.close();
 				}
-				oJsonObject.put("Success", "File Uploaded Successfully");
+				oJsonObject.put("imageMapList", oImages);
+				oJsonObject.put("pageCount", pagecounter);
 			} else if (type.equalsIgnoreCase("pptx")) {
 				XMLSlideShow ppt = new XMLSlideShow(inputFile);
 				XSLFSlide[] slides = ppt.getSlides();
@@ -116,10 +117,14 @@ public class ContentProcessor {
 					InputStream is = new ByteArrayInputStream(os.toByteArray());
 					cloudFilesOperationUtil.fIleUploaded(path + pagecounter + BinderConstants.IMG_EXTENSION, is,
 							CloudFileConstants.IMGFILETYPE);
+					oImages.add(CloudStorageConfig.getInstance().getSignedString(
+							CloudPropertiesReader.getInstance().getString("bucket.name"),
+							path + pagecounter + BinderConstants.IMG_EXTENSION));
 					os.close();
 					is.close();
 				}
-				oJsonObject.put("Success", "File Uploaded Successfully");
+				oJsonObject.put("imageMapList", oImages);
+				oJsonObject.put("pageCount", pagecounter);
 			} else {
 				// long lStartTime = System.currentTimeMillis();
 				BufferedImage bufferedImage = null;
@@ -133,17 +138,20 @@ public class ContentProcessor {
 					InputStream is = new ByteArrayInputStream(os.toByteArray());
 					cloudFilesOperationUtil.fIleUploaded(path + pagecounter + BinderConstants.IMG_EXTENSION, is,
 							CloudFileConstants.IMGFILETYPE);
+					oImages.add(CloudStorageConfig.getInstance().getSignedString(
+							CloudPropertiesReader.getInstance().getString("bucket.name"),
+							path + pagecounter + BinderConstants.IMG_EXTENSION));
 					is.close();
-					oJsonArray.add(path + pagecounter + BinderConstants.IMG_EXTENSION);
 				}
-				oJsonObject.put("Success", "File Uploaded Successfully");
+				oJsonObject.put("imageMapList", oImages);
+				oJsonObject.put("pageCount", pagecounter);
 			}
 		} catch (IOException e) {
 			throw new FileItException(e.getMessage());
 		} catch (Exception e) {
 			throw new FileItException(e.getMessage());
 		}
-		return pagecounter;
+		return oJsonObject;
 	}
 
 	/**
