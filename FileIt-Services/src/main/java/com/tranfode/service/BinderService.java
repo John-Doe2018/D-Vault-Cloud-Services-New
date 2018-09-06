@@ -70,11 +70,13 @@ import com.tranfode.processor.BookTreeProcessor;
 import com.tranfode.processor.ContentProcessor;
 import com.tranfode.processor.DeleteBookProcessor;
 import com.tranfode.processor.LookupBookProcessor;
+import com.tranfode.processor.PrepareClassificationMap;
 import com.tranfode.processor.TransformationProcessor;
 import com.tranfode.processor.UpdateMasterJson;
 import com.tranfode.util.BookMarkUtil;
 import com.tranfode.util.CloudPropertiesReader;
 import com.tranfode.util.CloudStorageConfig;
+import com.tranfode.util.FileInfoPropertyReader;
 import com.tranfode.util.FileItException;
 import com.tranfode.util.FileUtil;
 
@@ -91,21 +93,24 @@ public class BinderService {
 		CreateBinderResponse createBinderResponse = new CreateBinderResponse();
 		try {
 			FileUtil.checkTestJson();
+
+			String htmlContent = createBinderRequest.getHtmlContent();
+			TransformationProcessor transformationProcessor = new TransformationProcessor();
+			BinderList listOfBinderObj = transformationProcessor.createBinderList(htmlContent);
+			transformationProcessor.processHtmlToBinderXml(listOfBinderObj);
+			UpdateMasterJson updateMasterJson = new UpdateMasterJson();
+			updateMasterJson.prepareMasterJson(listOfBinderObj);
+			createBinderResponse.setSuccessMsg("Binder Successfully Created.");
+			JSONObject parentObj = new JSONObject();
+			InputStream is = new ByteArrayInputStream(parentObj.toJSONString().getBytes());
+			CloudStorageConfig.getInstance().uploadFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
+					CloudFileConstants.BOOKLISTJSON, is, CloudFileConstants.JSONFILETYPE);
+			PrepareClassificationMap
+					.createClassifiedMap(FileInfoPropertyReader.getInstance().getString("masterjson.file.path"));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		String htmlContent = createBinderRequest.getHtmlContent();
-		TransformationProcessor transformationProcessor = new TransformationProcessor();
-		BinderList listOfBinderObj = transformationProcessor.createBinderList(htmlContent);
-		transformationProcessor.processHtmlToBinderXml(listOfBinderObj);
-		UpdateMasterJson updateMasterJson = new UpdateMasterJson();
-		updateMasterJson.prepareMasterJson(listOfBinderObj);
-		createBinderResponse.setSuccessMsg("Binder Successfully Created.");
-		JSONObject parentObj = new JSONObject();
-		InputStream is = new ByteArrayInputStream(parentObj.toJSONString().getBytes());
-		CloudStorageConfig.getInstance().uploadFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
-				CloudFileConstants.BOOKLISTJSON, is, CloudFileConstants.JSONFILETYPE);
 		return createBinderResponse;
 	}
 
@@ -515,10 +520,13 @@ public class BinderService {
 	public BookMarkResponse getBookMarks(BookMarkRequest bookMarkRequest) throws FileItException {
 		BookMarkResponse bookMarkResponse = new BookMarkResponse();
 		String loggedInUser = bookMarkRequest.getUserName();
-
 		List<BookMarkDetails> bookMarkdetails = new ArrayList<BookMarkDetails>();
 		bookMarkdetails = BookMarkUtil.getInstance().getBookMarks(loggedInUser);
-		bookMarkResponse.setBookmarkDetailsList(bookMarkdetails);
+		if (null != bookMarkdetails) {
+			bookMarkResponse.setBookmarkDetailsList(bookMarkdetails);
+		} else {
+			bookMarkResponse.setErrorMessage("No Data Found");
+		}
 		return bookMarkResponse;
 
 	}

@@ -155,15 +155,17 @@ public class BookMarkUtil {
 			try {
 				bookArray = (JSONObject) parser.parse(new InputStreamReader(inputStream));
 				JSONArray newBookClassListObj = (JSONArray) bookArray.get(bookMarkDetails.getUserName());
-				for (int i = 0; i < newBookClassListObj.size(); i++) {
-					JSONObject json_data = (JSONObject) newBookClassListObj.get(i);
-					String bookname = (String) json_data.get("bookName");
-					String classificationName = (String) json_data.get("classification");
-					BookMarkDetails bookMarkDetail = new BookMarkDetails();
-					bookMarkDetail.setBookName(bookname);
-					bookMarkDetail.setClassification(classificationName);
-					bookMarkDetail.setUserName(loggedInUser);
-					bookMarkDetailsList.add(bookMarkDetail);
+				if (null != newBookClassListObj) {
+					for (int i = 0; i < newBookClassListObj.size(); i++) {
+						JSONObject json_data = (JSONObject) newBookClassListObj.get(i);
+						String bookname = (String) json_data.get("bookName");
+						String classificationName = (String) json_data.get("classification");
+						BookMarkDetails bookMarkDetail = new BookMarkDetails();
+						bookMarkDetail.setBookName(bookname);
+						bookMarkDetail.setClassification(classificationName);
+						bookMarkDetail.setUserName(loggedInUser);
+						bookMarkDetailsList.add(bookMarkDetail);
+					}
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
