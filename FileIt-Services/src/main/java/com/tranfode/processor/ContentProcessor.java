@@ -5,9 +5,11 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +29,11 @@ import org.apache.poi.xslf.usermodel.XSLFSlide;
 import org.apache.poi.xwpf.converter.pdf.PdfConverter;
 import org.apache.poi.xwpf.converter.pdf.PdfOptions;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.icepdf.core.exceptions.PDFException;
+import org.icepdf.core.exceptions.PDFSecurityException;
+import org.icepdf.core.pobjects.Document;
+import org.icepdf.core.pobjects.Page;
+import org.icepdf.core.util.GraphicsRenderingHints;
 import org.json.simple.JSONObject;
 
 import com.tranfode.Constants.BinderConstants;
@@ -128,23 +135,49 @@ public class ContentProcessor {
 			} else {
 				// long lStartTime = System.currentTimeMillis();
 				BufferedImage bufferedImage = null;
-				document = PDDocument.load(inputFile);
-				List<PDPage> pages = document.getDocumentCatalog().getAllPages();
-				for (PDPage page : pages) {
-					pagecounter++;
-					bufferedImage = page.convertToImage();
+				Document icebergDocument = new Document();
+				try {
+					icebergDocument.setInputStream(inputFile, null);
+				} catch (PDFException ex) {
+					// System.out.println("Error parsing PDF document " + ex);
+					throw new FileItException(ex.getMessage());
+				} catch (PDFSecurityException ex) {
+					// System.out.println("Error encryption not supported " + ex);
+					throw new FileItException(ex.getMessage());
+				} catch (FileNotFoundException ex) {
+					// System.out.println("Error file not found " + ex);
+					throw new FileItException(ex.getMessage());
+				} catch (IOException ex) {
+					// System.out.println("Error IOException " + ex);
+					throw new FileItException(ex.getMessage());
+				}
+				float scale = 1.0f;
+				float rotation = 0f;
+				for (int i = 0; i < icebergDocument.getNumberOfPages(); i++) {
+					BufferedImage image = (BufferedImage) icebergDocument.getPageImage(i, GraphicsRenderingHints.PRINT,
+							Page.BOUNDARY_CROPBOX, rotation, scale);
+					RenderedImage rendImage = image;
 					ByteArrayOutputStream os = new ByteArrayOutputStream();
-					javax.imageio.ImageIO.write(bufferedImage, "JPG", os);
-					InputStream is = new ByteArrayInputStream(os.toByteArray());
-					cloudFilesOperationUtil.fIleUploaded(path + pagecounter + BinderConstants.IMG_EXTENSION, is,
-							CloudFileConstants.IMGFILETYPE);
-					oImages.add(CloudStorageConfig.getInstance().getSignedString(
-							CloudPropertiesReader.getInstance().getString("bucket.name"),
-							path + pagecounter + BinderConstants.IMG_EXTENSION));
-					is.close();
+					try {
+						System.out.println(" capturing page " + i);
+						File file = new File("imageCapture1_" + i + ".tif");
+						ImageIO.write(rendImage, "tiff", os);
+						InputStream is = new ByteArrayInputStream(os.toByteArray());
+						cloudFilesOperationUtil.fIleUploaded(path + pagecounter + BinderConstants.IMG_EXTENSION, is,
+								CloudFileConstants.IMGFILETYPE);
+						oImages.add(CloudStorageConfig.getInstance().getSignedString(
+								CloudPropertiesReader.getInstance().getString("bucket.name"),
+								path + pagecounter + BinderConstants.IMG_EXTENSION));
+						is.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					image.flush();
 				}
 				oJsonObject.put("imageMapList", oImages);
 				oJsonObject.put("pageCount", pagecounter);
+				icebergDocument.dispose();
+
 			}
 		} catch (IOException e) {
 			throw new FileItException(e.getMessage());

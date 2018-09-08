@@ -174,18 +174,24 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.icepdf.os/icepdf-core -->
+		<dependency>
+			<groupId>org.icepdf.os</groupId>
+			<artifactId>icepdf-core</artifactId>
+			<version>6.1.2</version>
+		</dependency>
 
-		<!-- <dependency> <groupId>javax.ws.rs</groupId> <artifactId>javax.ws.rs-api</artifactId> 
-			<version>2.0.1</version> </dependency> -->
-
-
-		<!-- <dependency> <groupId>javax.servlet</groupId> <artifactId>servlet-api</artifactId> 
-			<version>2.5</version> <scope>provided</scope> </dependency> -->
+		<!-- https://mvnrepository.com/artifact/org.icepdf.os/icepdf-viewer -->
+		<dependency>
+			<groupId>org.icepdf.os</groupId>
+			<artifactId>icepdf-viewer</artifactId>
+			<version>6.1.2</version>
+		</dependency>
 
 	</dependencies>
 	<build>
 		<finalName>FileIt-Services</finalName>
-		<sourceDirectory>src</sourceDirectory>
+		<!-- <sourceDirectory>src</sourceDirectory> -->
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
