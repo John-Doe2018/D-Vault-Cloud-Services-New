@@ -133,35 +133,29 @@ public class ContentProcessor {
 				oJsonObject.put("imageMapList", oImages);
 				oJsonObject.put("pageCount", pagecounter);
 			} else {
-				// long lStartTime = System.currentTimeMillis();
-				BufferedImage bufferedImage = null;
 				Document icebergDocument = new Document();
 				try {
-					icebergDocument.setInputStream(inputFile, null);
+					icebergDocument.setInputStream(inputFile, "/Image");
 				} catch (PDFException ex) {
-					// System.out.println("Error parsing PDF document " + ex);
 					throw new FileItException(ex.getMessage());
 				} catch (PDFSecurityException ex) {
-					// System.out.println("Error encryption not supported " + ex);
 					throw new FileItException(ex.getMessage());
 				} catch (FileNotFoundException ex) {
-					// System.out.println("Error file not found " + ex);
 					throw new FileItException(ex.getMessage());
 				} catch (IOException ex) {
-					// System.out.println("Error IOException " + ex);
 					throw new FileItException(ex.getMessage());
 				}
 				float scale = 1.0f;
 				float rotation = 0f;
 				for (int i = 0; i < icebergDocument.getNumberOfPages(); i++) {
+					pagecounter++;
 					BufferedImage image = (BufferedImage) icebergDocument.getPageImage(i, GraphicsRenderingHints.PRINT,
 							Page.BOUNDARY_CROPBOX, rotation, scale);
 					RenderedImage rendImage = image;
 					ByteArrayOutputStream os = new ByteArrayOutputStream();
 					try {
 						System.out.println(" capturing page " + i);
-						File file = new File("imageCapture1_" + i + ".tif");
-						ImageIO.write(rendImage, "tiff", os);
+						ImageIO.write(rendImage, "jpeg", os);
 						InputStream is = new ByteArrayInputStream(os.toByteArray());
 						cloudFilesOperationUtil.fIleUploaded(path + pagecounter + BinderConstants.IMG_EXTENSION, is,
 								CloudFileConstants.IMGFILETYPE);
@@ -172,6 +166,7 @@ public class ContentProcessor {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
+					os.close();
 					image.flush();
 				}
 				oJsonObject.put("imageMapList", oImages);
@@ -220,6 +215,7 @@ public class ContentProcessor {
 	 * @return
 	 * @throws FileItException
 	 */
+	@SuppressWarnings("unchecked")
 	public JSONObject processContent(String bookName, String classificationName, InputStream inputFile, String path,
 			String type, String fileName) throws FileItException {
 		JSONObject oJsonObject = new JSONObject();
@@ -245,6 +241,7 @@ public class ContentProcessor {
 	 * @throws FileItException
 	 * @throws IOException
 	 */
+	@SuppressWarnings("resource")
 	public void getMultipleFileDownload(String classificationame, String bookname, List<String> filename, File oFile)
 			throws FileItException, IOException {
 		FileOutputStream fos = new FileOutputStream(oFile);
