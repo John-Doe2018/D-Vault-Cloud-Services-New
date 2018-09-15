@@ -248,6 +248,19 @@ public class CloudStorageConfig {
 
 	}
 
+	public void updateFile(String bucketName, String fileName, String contentType) throws FileItException {
+		Storage storage;
+		try {
+			StorageObject object = new StorageObject();
+			object.setContentType(contentType);
+			storage = getStorage();
+			storage.objects().update(bucketName, fileName, object).execute();
+		} catch (Exception e) {
+			throw new FileItException("Exception Occured !!!");
+		}
+
+	}
+
 	/**
 	 * Creates a bucket
 	 * 

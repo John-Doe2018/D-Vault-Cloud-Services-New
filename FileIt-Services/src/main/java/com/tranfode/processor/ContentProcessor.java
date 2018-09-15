@@ -36,6 +36,7 @@ import org.icepdf.core.pobjects.Page;
 import org.icepdf.core.util.GraphicsRenderingHints;
 import org.json.simple.JSONObject;
 
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import com.tranfode.Constants.BinderConstants;
 import com.tranfode.Constants.CloudFileConstants;
 import com.tranfode.domain.FileItContext;
@@ -73,9 +74,10 @@ public class ContentProcessor {
 	 */
 	@SuppressWarnings("unchecked")
 	public JSONObject processContentImage(String bookName, InputStream inputFile, String path, String type,
-			String fileName, int pagecounter, List<String> oImages) throws FileItException {
+			String fileName, int pagecounter, List<String> oImages, List<Integer> rangeVals) throws FileItException {
 		JSONObject oJsonObject = new JSONObject();
 		PDDocument document = null;
+		List<String> byteArrayObj = new ArrayList<String>();
 		System.setProperty("org.apache.pdfbox.baseParser.pushBackSize", "999000");
 		try {
 			if (type.equalsIgnoreCase("docx")) {
@@ -147,30 +149,29 @@ public class ContentProcessor {
 				}
 				float scale = 1.0f;
 				float rotation = 0f;
-				for (int i = 0; i < icebergDocument.getNumberOfPages(); i++) {
-					pagecounter++;
-					BufferedImage image = (BufferedImage) icebergDocument.getPageImage(i, GraphicsRenderingHints.PRINT,
-							Page.BOUNDARY_CROPBOX, rotation, scale);
+				int startRange = 1;
+				int endrange = 2;
+				if (rangeVals == null) {
+					rangeVals = new ArrayList<Integer>();
+					rangeVals.add(startRange);
+					rangeVals.add(endrange);
+				}
+				for (int i = 0; i < rangeVals.size(); i++) {
+					BufferedImage image = (BufferedImage) icebergDocument.getPageImage(rangeVals.get(i),
+							GraphicsRenderingHints.PRINT, Page.BOUNDARY_CROPBOX, rotation, scale);
 					RenderedImage rendImage = image;
 					ByteArrayOutputStream os = new ByteArrayOutputStream();
 					try {
-						System.out.println(" capturing page " + i);
 						ImageIO.write(rendImage, "jpeg", os);
-						InputStream is = new ByteArrayInputStream(os.toByteArray());
-						cloudFilesOperationUtil.fIleUploaded(path + pagecounter + BinderConstants.IMG_EXTENSION, is,
-								CloudFileConstants.IMGFILETYPE);
-						oImages.add(CloudStorageConfig.getInstance().getSignedString(
-								CloudPropertiesReader.getInstance().getString("bucket.name"),
-								path + pagecounter + BinderConstants.IMG_EXTENSION));
-						is.close();
+						byte[] bytes = os.toByteArray();
+						byteArrayObj.add(Base64.encode(bytes));
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 					os.close();
 					image.flush();
 				}
-				oJsonObject.put("imageMapList", oImages);
-				oJsonObject.put("pageCount", pagecounter);
+				oJsonObject.put("imageMapList", byteArrayObj);
 				icebergDocument.dispose();
 
 			}

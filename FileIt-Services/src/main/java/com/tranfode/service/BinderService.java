@@ -142,7 +142,7 @@ public class BinderService {
 			detailsObj = ContentProcessor.getInstance().processContentImage(oGetImageRequest.getBookName(), fis,
 					oGetImageRequest.getClassification() + "/" + oGetImageRequest.getBookName() + "/Images/", extension,
 					fileName, Integer.valueOf(detailsObj.get("pageCount").toString()),
-					(List<String>) detailsObj.get("imageMapList"));
+					(List<String>) detailsObj.get("imageMapList"), oGetImageRequest.getRangeList());
 		}
 
 		return (List<String>) detailsObj.get("imageMapList");

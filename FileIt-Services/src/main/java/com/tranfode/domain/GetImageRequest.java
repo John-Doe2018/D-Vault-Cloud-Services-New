@@ -1,9 +1,19 @@
 package com.tranfode.domain;
 
+import java.util.List;
+
 public class GetImageRequest {
 	private String bookName;
-	
+	private List<Integer> rangeList;
 	private String classification;
+
+	public List<Integer> getRangeList() {
+		return rangeList;
+	}
+
+	public void setRangeList(List<Integer> rangeList) {
+		this.rangeList = rangeList;
+	}
 
 	public String getClassification() {
 		return classification;
