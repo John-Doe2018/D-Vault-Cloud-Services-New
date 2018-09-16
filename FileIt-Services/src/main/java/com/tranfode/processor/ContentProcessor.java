@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -74,10 +75,10 @@ public class ContentProcessor {
 	 */
 	@SuppressWarnings("unchecked")
 	public JSONObject processContentImage(String bookName, InputStream inputFile, String path, String type,
-			String fileName, int pagecounter, List<String> oImages, List<Integer> rangeVals) throws FileItException {
+			String fileName, int pagecounter, List<String> oImages, Integer startrange, Integer endrange)
+			throws FileItException {
 		JSONObject oJsonObject = new JSONObject();
 		PDDocument document = null;
-		List<String> byteArrayObj = new ArrayList<String>();
 		System.setProperty("org.apache.pdfbox.baseParser.pushBackSize", "999000");
 		try {
 			if (type.equalsIgnoreCase("docx")) {
@@ -147,31 +148,15 @@ public class ContentProcessor {
 				} catch (IOException ex) {
 					throw new FileItException(ex.getMessage());
 				}
-				float scale = 1.0f;
-				float rotation = 0f;
-				int startRange = 1;
-				int endrange = 2;
-				if (rangeVals == null) {
-					rangeVals = new ArrayList<Integer>();
-					rangeVals.add(startRange);
-					rangeVals.add(endrange);
+				if (oImages == null) {
+					oImages = new ArrayList<>();
 				}
-				for (int i = 0; i < rangeVals.size(); i++) {
-					BufferedImage image = (BufferedImage) icebergDocument.getPageImage(rangeVals.get(i),
-							GraphicsRenderingHints.PRINT, Page.BOUNDARY_CROPBOX, rotation, scale);
-					RenderedImage rendImage = image;
-					ByteArrayOutputStream os = new ByteArrayOutputStream();
-					try {
-						ImageIO.write(rendImage, "jpeg", os);
-						byte[] bytes = os.toByteArray();
-						byteArrayObj.add(Base64.encode(bytes));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					os.close();
-					image.flush();
+				oImages.add(convertimage(icebergDocument, startrange));
+				if (null != endrange) {
+					oImages.add(convertimage(icebergDocument, endrange));
 				}
-				oJsonObject.put("imageMapList", byteArrayObj);
+				oJsonObject.put("imageMapList", oImages);
+				oJsonObject.put("pageCount", 0);
 				icebergDocument.dispose();
 
 			}
@@ -181,6 +166,60 @@ public class ContentProcessor {
 			throw new FileItException(e.getMessage());
 		}
 		return oJsonObject;
+	}
+
+	public String convertimage(Document icebergDocument, int range) {
+		float scale = 1.0f;
+		float rotation = 0f;
+		String encodedString = "";
+		BufferedImage image = (BufferedImage) icebergDocument.getPageImage(range - 1, GraphicsRenderingHints.PRINT,
+				Page.BOUNDARY_CROPBOX, rotation, scale);
+		RenderedImage rendImage = image;
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		try {
+			ImageIO.write(rendImage, "jpeg", os);
+			byte[] bytes = os.toByteArray();
+			encodedString = Base64.encode(bytes);
+			os.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return encodedString;
+		}
+		image.flush();
+		return encodedString;
+	}
+
+	public JSONObject getBookPageInfo(Collection<String> filtered, String bookname)
+			throws FileItException, IOException {
+		int pageSize = 0;
+		JSONObject docpageInfo = new JSONObject();
+		int book1pageSize = 0;
+		for (String newDoc : filtered) {
+			int firstTime = 1;
+			Document icebergDocument = new Document();
+
+			InputStream fis = CloudStorageConfig.getInstance()
+					.getFile(CloudPropertiesReader.getInstance().getString("bucket.name"), newDoc);
+			try {
+				icebergDocument.setInputStream(fis, "/Image");
+				//
+
+				if (firstTime == 1) {
+					book1pageSize = icebergDocument.getNumberOfPages();
+					docpageInfo.put(newDoc, book1pageSize);
+				} else {
+					book1pageSize = book1pageSize + icebergDocument.getNumberOfPages();
+					docpageInfo.put(newDoc, book1pageSize);
+				}
+				firstTime++;
+			} catch (Exception e) {
+				throw new FileItException(e.getMessage());
+			}
+		}
+		FileItContext oContext = new FileItContext();
+		oContext.add(bookname, docpageInfo);
+		return docpageInfo;
+
 	}
 
 	/**

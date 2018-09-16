@@ -123,26 +123,64 @@ public class BinderService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public List<String> getFile(GetImageRequest oGetImageRequest) throws Exception {
 		InputStream fis;
+		FileItContext oFileItContext = new FileItContext();
+		List<String> oImages = new ArrayList<>();
+		JSONObject detailsObj = new JSONObject();
+		JSONObject pagedetaillsObj = new JSONObject();
+		detailsObj.put("pageCount", 0);
+		detailsObj.put("imageMapList", oImages);
 		String wordToSearchFor1 = oGetImageRequest.getClassification() + '/' + oGetImageRequest.getBookName() + '/'
 				+ "Contents/";
-		List<String> oImages = new ArrayList<>();
 		List<String> oList = CloudStorageConfig.getInstance()
 				.listBucket(CloudPropertiesReader.getInstance().getString("bucket.name"));
 		Collection<String> filtered = Collections2.filter(oList, Predicates.containsPattern(wordToSearchFor1));
-		System.out.println("List...." + filtered);
-		JSONObject detailsObj = new JSONObject();
-		detailsObj.put("pageCount", 0);
-		detailsObj.put("imageMapList", oImages);
-		for (String word1 : filtered) {
+		List<String> booklist = new ArrayList<>();
+		if (null != oFileItContext.get(oGetImageRequest.getBookName())) {
+			pagedetaillsObj = (JSONObject) oFileItContext.get(oGetImageRequest.getBookName());
+		} else {
+			pagedetaillsObj = ContentProcessor.getInstance().getBookPageInfo(filtered, oGetImageRequest.getBookName());
+		}
+		for (String docname : filtered) {
+			if (Integer.valueOf(pagedetaillsObj.get(docname).toString()) >= oGetImageRequest.getRangeList().get(0)
+					&& Integer.valueOf(pagedetaillsObj.get(docname).toString()) >= oGetImageRequest.getRangeList()
+							.get(1)) {
+				booklist.add(docname);
+				break;
+			} else if (Integer.valueOf(pagedetaillsObj.get(docname).toString()) >= oGetImageRequest.getRangeList()
+					.get(0)
+					&& Integer.valueOf(pagedetaillsObj.get(docname).toString()) < oGetImageRequest.getRangeList()
+							.get(1)) {
+				booklist.add(docname);
+			} else if(Integer.valueOf(pagedetaillsObj.get(docname).toString()) > oGetImageRequest.getRangeList()
+					.get(0)
+					&& Integer.valueOf(pagedetaillsObj.get(docname).toString()) > oGetImageRequest.getRangeList()
+							.get(1)){
+				booklist.add(docname);
+				break;
+			}
+		}
 
-			String extension = FilenameUtils.getExtension(word1);
-			String fileName = FilenameUtils.getName(word1);
+		if (booklist.size() == 1) {
+			String extension = FilenameUtils.getExtension(booklist.get(0));
+			String fileName = FilenameUtils.getName(booklist.get(0));
 			fis = CloudStorageConfig.getInstance().getFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
-					word1);
+					booklist.get(0));
 			detailsObj = ContentProcessor.getInstance().processContentImage(oGetImageRequest.getBookName(), fis,
 					oGetImageRequest.getClassification() + "/" + oGetImageRequest.getBookName() + "/Images/", extension,
 					fileName, Integer.valueOf(detailsObj.get("pageCount").toString()),
-					(List<String>) detailsObj.get("imageMapList"), oGetImageRequest.getRangeList());
+					(List<String>) detailsObj.get("imageMapList"), oGetImageRequest.getRangeList().get(0),
+					oGetImageRequest.getRangeList().get(1));
+		} else {
+			for (int k = 0; k < booklist.size(); k++) {
+				String extension = FilenameUtils.getExtension(booklist.get(k));
+				String fileName = FilenameUtils.getName(booklist.get(k));
+				fis = CloudStorageConfig.getInstance()
+						.getFile(CloudPropertiesReader.getInstance().getString("bucket.name"), booklist.get(k));
+				detailsObj = ContentProcessor.getInstance().processContentImage(oGetImageRequest.getBookName(), fis,
+						oGetImageRequest.getClassification() + "/" + oGetImageRequest.getBookName() + "/Images/",
+						extension, fileName, Integer.valueOf(detailsObj.get("pageCount").toString()),
+						(List<String>) detailsObj.get("imageMapList"), oGetImageRequest.getRangeList().get(k), null);
+			}
 		}
 
 		return (List<String>) detailsObj.get("imageMapList");
