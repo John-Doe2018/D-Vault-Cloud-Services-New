@@ -152,7 +152,7 @@ public class ContentProcessor {
 					oImages = new ArrayList<>();
 				}
 				oImages.add(convertimage(icebergDocument, startrange));
-				if (null != endrange) {
+				if (null != endrange && icebergDocument.getNumberOfPages() >= endrange) {
 					oImages.add(convertimage(icebergDocument, endrange));
 				}
 				oJsonObject.put("imageMapList", oImages);

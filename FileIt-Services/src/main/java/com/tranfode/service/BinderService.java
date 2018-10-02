@@ -151,10 +151,9 @@ public class BinderService {
 					&& Integer.valueOf(pagedetaillsObj.get(docname).toString()) < oGetImageRequest.getRangeList()
 							.get(1)) {
 				booklist.add(docname);
-			} else if(Integer.valueOf(pagedetaillsObj.get(docname).toString()) > oGetImageRequest.getRangeList()
-					.get(0)
+			} else if (Integer.valueOf(pagedetaillsObj.get(docname).toString()) > oGetImageRequest.getRangeList().get(0)
 					&& Integer.valueOf(pagedetaillsObj.get(docname).toString()) > oGetImageRequest.getRangeList()
-							.get(1)){
+							.get(1)) {
 				booklist.add(docname);
 				break;
 			}
@@ -266,6 +265,7 @@ public class BinderService {
 			String type = file3.getObject(String.class);
 			String fileName = file4.getObject(String.class);
 			String className = classificationName.getObject(String.class);
+			fileName.replaceAll("\\s+", "");
 			InputStream fileStream = file.getObject(InputStream.class);
 			List<String> oList = CloudStorageConfig.getInstance()
 					.listBucket(CloudPropertiesReader.getInstance().getString("bucket.name"));

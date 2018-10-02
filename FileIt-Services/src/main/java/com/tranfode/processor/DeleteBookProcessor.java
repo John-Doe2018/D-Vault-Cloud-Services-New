@@ -65,6 +65,8 @@ public class DeleteBookProcessor {
 			}
 
 		}
+		FileItContext fileItContext = new FileItContext();
+		fileItContext.remove(deleteBookRequest);
 		return deleteMsg;
 	}
 
