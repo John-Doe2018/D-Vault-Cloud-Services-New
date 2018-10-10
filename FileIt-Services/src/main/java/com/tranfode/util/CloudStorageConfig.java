@@ -195,6 +195,7 @@ public class CloudStorageConfig {
 	public InputStream getFile(String bucketName, String filePath) throws FileItException {
 		setExpiryTimeInEpoch();
 		InputStream getOutput = null;
+		filePath=filePath.replaceAll(" ", "%20");
 		String stringToSign = getSignInput(filePath);
 		PrivateKey pk = getPrivateKey();
 		String signedString = getSignedString(stringToSign, pk);

@@ -169,7 +169,7 @@ public class ContentProcessor {
 	}
 
 	public String convertimage(Document icebergDocument, int range) {
-		float scale = 1.0f;
+		float scale = 1.5f;
 		float rotation = 0f;
 		String encodedString = "";
 		BufferedImage image = (BufferedImage) icebergDocument.getPageImage(range - 1, GraphicsRenderingHints.PRINT,
