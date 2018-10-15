@@ -87,10 +87,11 @@ public class TransformationProcessor {
 			for (Children child : binderlist.getChildren()) {
 				Element topic = document.createElement("topic");
 				topic.setAttribute(BinderConstants.NAME, child.getName());
-				topic.setAttribute(BinderConstants.PATH, "Images" + "/" + binderlist.getName() + "/" + child.getName());
+				//topic.setAttribute(BinderConstants.PATH, "Images" + "/" + binderlist.getName() + "/" + child.getName());
+				topic.setAttribute(BinderConstants.PATH, binderlist.getClassification()+"/"+binderlist.getName()+"/"+BinderConstants.CONTENTS+"/"+child.getName());
 				topic.setAttribute(BinderConstants.TYPE, child.getType());
-				topic.setAttribute(BinderConstants.VERSION, child.getVersion());
-				topic.setAttribute(BinderConstants.ID, (String.valueOf(child.getId())));
+				topic.setAttribute(BinderConstants.VERSION, BinderConstants.VERSION1_0);
+				topic.setAttribute(BinderConstants.ID, UUID.randomUUID().toString());
 				topicref.appendChild(topic);
 				pathNamesList.add(child.getPath());
 			}

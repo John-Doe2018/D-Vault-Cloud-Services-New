@@ -75,7 +75,7 @@ public class ContentProcessor {
 	 */
 	@SuppressWarnings("unchecked")
 	public JSONObject processContentImage(String bookName, InputStream inputFile, String path, String type,
-			String fileName, int pagecounter, List<String> oImages, Integer startrange, Integer endrange)
+			String fileName, int pagecounter, List<String> oImages, Integer firstPageIndex, Integer secondPageIndex)
 			throws FileItException {
 		JSONObject oJsonObject = new JSONObject();
 		PDDocument document = null;
@@ -151,9 +151,11 @@ public class ContentProcessor {
 				if (oImages == null) {
 					oImages = new ArrayList<>();
 				}
-				oImages.add(convertimage(icebergDocument, startrange));
-				if (null != endrange && icebergDocument.getNumberOfPages() >= endrange) {
-					oImages.add(convertimage(icebergDocument, endrange));
+				if(null!=firstPageIndex) {
+					oImages.add(convertimage(icebergDocument, firstPageIndex));
+				}
+				if(null!=secondPageIndex) {
+					oImages.add(convertimage(icebergDocument, secondPageIndex));
 				}
 				oJsonObject.put("imageMapList", oImages);
 				oJsonObject.put("pageCount", 0);
@@ -193,25 +195,21 @@ public class ContentProcessor {
 			throws FileItException, IOException {
 		int pageSize = 0;
 		JSONObject docpageInfo = new JSONObject();
-		int book1pageSize = 0;
+		int startIndex = 1;
+		int endIndex=0;
 		for (String newDoc : filtered) {
-			int firstTime = 1;
 			Document icebergDocument = new Document();
 
 			InputStream fis = CloudStorageConfig.getInstance()
 					.getFile(CloudPropertiesReader.getInstance().getString("bucket.name"), newDoc);
 			try {
 				icebergDocument.setInputStream(fis, "/Image");
-				//
-
-				if (firstTime == 1) {
-					book1pageSize = icebergDocument.getNumberOfPages();
-					docpageInfo.put(newDoc, book1pageSize);
-				} else {
-					book1pageSize = book1pageSize + icebergDocument.getNumberOfPages();
-					docpageInfo.put(newDoc, book1pageSize);
-				}
-				firstTime++;
+				List<Integer> indexList=new ArrayList<Integer>();
+				endIndex=endIndex+icebergDocument.getNumberOfPages();
+				indexList.add(startIndex);
+				indexList.add(endIndex);
+				docpageInfo.put(newDoc, indexList);
+				startIndex =startIndex + icebergDocument.getNumberOfPages();
 			} catch (Exception e) {
 				throw new FileItException(e.getMessage());
 			}
