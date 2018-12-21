@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -44,7 +44,6 @@ import org.xml.sax.SAXException;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
-import com.google.gson.JsonArray;
 import com.tranfode.Constants.BinderConstants;
 import com.tranfode.Constants.CloudFileConstants;
 import com.tranfode.domain.AddClassificationRequest;
@@ -54,6 +53,8 @@ import com.tranfode.domain.BinderList;
 import com.tranfode.domain.BookMarkDetails;
 import com.tranfode.domain.BookMarkRequest;
 import com.tranfode.domain.BookMarkResponse;
+import com.tranfode.domain.BookPageDetailsRequest;
+import com.tranfode.domain.BookPageDetailsResponse;
 import com.tranfode.domain.CreateBinderRequest;
 import com.tranfode.domain.CreateBinderResponse;
 import com.tranfode.domain.DeleteBookRequest;
@@ -132,86 +133,81 @@ public class BinderService {
 		JSONObject pagedetaillsObj = new JSONObject();
 		detailsObj.put("pageCount", 0);
 		detailsObj.put("imageMapList", oImages);
-		
+
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
-		
-		
-		String requiredXmlPath = "files/" + oGetImageRequest.getClassification() + "/" + oGetImageRequest.getBookName() + ".xml";
-		CloudFilesOperationUtil cloudFilesOperationUtil= new CloudFilesOperationUtil();
+
+		String requiredXmlPath = "files/" + oGetImageRequest.getClassification() + "/" + oGetImageRequest.getBookName()
+				+ ".xml";
+		CloudFilesOperationUtil cloudFilesOperationUtil = new CloudFilesOperationUtil();
 		InputStream xmlInputStream = cloudFilesOperationUtil.getFIleInputStream(requiredXmlPath);
 		Document doc = builder.parse(xmlInputStream);
-		NodeList elementList= doc.getElementsByTagName("topic");
-		List<String> listOfDoc=new ArrayList<String>();
-		for (int i=0; i<elementList.getLength();i++) {
-			listOfDoc.add(((Element)elementList.item(i)).getAttribute("path"));
+		NodeList elementList = doc.getElementsByTagName("topic");
+		List<String> listOfDoc = new ArrayList<String>();
+		for (int i = 0; i < elementList.getLength(); i++) {
+			listOfDoc.add(((Element) elementList.item(i)).getAttribute("path"));
 		}
-		
+
 		if (null != oFileItContext.get(oGetImageRequest.getBookName())) {
 			pagedetaillsObj = (JSONObject) oFileItContext.get(oGetImageRequest.getBookName());
 		} else {
 			pagedetaillsObj = ContentProcessor.getInstance().getBookPageInfo(listOfDoc, oGetImageRequest.getBookName());
 		}
-		
-		int firstPageNo=oGetImageRequest.getRangeList().get(0);
-		int secondPageNo=oGetImageRequest.getRangeList().get(1);
+
+		int firstPageNo = oGetImageRequest.getRangeList().get(0);
+		int secondPageNo = oGetImageRequest.getRangeList().get(1);
 		List<String> booklist = new ArrayList<>();
 		for (String docname : listOfDoc) {
-			if (firstPageNo>= ((List<Integer>) pagedetaillsObj.get(docname)).get(0)
-					&& firstPageNo<= ((List<Integer>) pagedetaillsObj.get(docname)).get(1)
-					&& secondPageNo>= ((List<Integer>) pagedetaillsObj.get(docname)).get(0)
-					&& secondPageNo<= ((List<Integer>) pagedetaillsObj.get(docname)).get(1) ) {
+			if (firstPageNo >= ((List<Integer>) pagedetaillsObj.get(docname)).get(0)
+					&& firstPageNo <= ((List<Integer>) pagedetaillsObj.get(docname)).get(1)
+					&& secondPageNo >= ((List<Integer>) pagedetaillsObj.get(docname)).get(0)
+					&& secondPageNo <= ((List<Integer>) pagedetaillsObj.get(docname)).get(1)) {
 				booklist.add(docname);
 				break;
-			}else if(firstPageNo>= ((List<Integer>) pagedetaillsObj.get(docname)).get(0)
-					&& firstPageNo<= ((List<Integer>) pagedetaillsObj.get(docname)).get(1)){
+			} else if (firstPageNo >= ((List<Integer>) pagedetaillsObj.get(docname)).get(0)
+					&& firstPageNo <= ((List<Integer>) pagedetaillsObj.get(docname)).get(1)) {
 				booklist.add(docname);
-			}else if(secondPageNo>= ((List<Integer>) pagedetaillsObj.get(docname)).get(0)
-					&& secondPageNo<= ((List<Integer>) pagedetaillsObj.get(docname)).get(1)) {
+			} else if (secondPageNo >= ((List<Integer>) pagedetaillsObj.get(docname)).get(0)
+					&& secondPageNo <= ((List<Integer>) pagedetaillsObj.get(docname)).get(1)) {
 				booklist.add(docname);
 			}
 		}
-	
-		if(booklist.size()==1) {
+
+		if (booklist.size() == 1) {
 			String extension = FilenameUtils.getExtension(booklist.get(0));
 			String fileName = FilenameUtils.getName(booklist.get(0));
-			int firstPageIndex=firstPageNo-((List<Integer>) pagedetaillsObj.get(booklist.get(0))).get(0)+1;
+			int firstPageIndex = firstPageNo - ((List<Integer>) pagedetaillsObj.get(booklist.get(0))).get(0) + 1;
 			fis = CloudStorageConfig.getInstance().getFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
 					booklist.get(0));
 			detailsObj = ContentProcessor.getInstance().processContentImage(oGetImageRequest.getBookName(), fis,
 					oGetImageRequest.getClassification() + "/" + oGetImageRequest.getBookName() + "/Images/", extension,
 					fileName, Integer.valueOf(detailsObj.get("pageCount").toString()),
-					(List<String>) detailsObj.get("imageMapList"), firstPageIndex,
-					firstPageIndex+1);
-		}else if(booklist.size()>1) {
-			//fetching from forst doc
+					(List<String>) detailsObj.get("imageMapList"), firstPageIndex, firstPageIndex + 1);
+		} else if (booklist.size() > 1) {
+			// fetching from forst doc
 			String extension = FilenameUtils.getExtension(booklist.get(0));
 			String fileName = FilenameUtils.getName(booklist.get(0));
-			int firstPageIndex=firstPageNo-((List<Integer>) pagedetaillsObj.get(booklist.get(0))).get(0)+1;
+			int firstPageIndex = firstPageNo - ((List<Integer>) pagedetaillsObj.get(booklist.get(0))).get(0) + 1;
 			fis = CloudStorageConfig.getInstance().getFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
 					booklist.get(0));
 			detailsObj = ContentProcessor.getInstance().processContentImage(oGetImageRequest.getBookName(), fis,
 					oGetImageRequest.getClassification() + "/" + oGetImageRequest.getBookName() + "/Images/", extension,
 					fileName, Integer.valueOf(detailsObj.get("pageCount").toString()),
-					(List<String>) detailsObj.get("imageMapList"), firstPageIndex,
-					null);
-			
-			
-			//fetching from second doc
+					(List<String>) detailsObj.get("imageMapList"), firstPageIndex, null);
+
+			// fetching from second doc
 			extension = FilenameUtils.getExtension(booklist.get(1));
 			fileName = FilenameUtils.getName(booklist.get(1));
-			int secondPageIndex=secondPageNo-((List<Integer>) pagedetaillsObj.get(booklist.get(1))).get(0)+1;
+			int secondPageIndex = secondPageNo - ((List<Integer>) pagedetaillsObj.get(booklist.get(1))).get(0) + 1;
 			fis = CloudStorageConfig.getInstance().getFile(CloudPropertiesReader.getInstance().getString("bucket.name"),
 					booklist.get(1));
 			detailsObj = ContentProcessor.getInstance().processContentImage(oGetImageRequest.getBookName(), fis,
 					oGetImageRequest.getClassification() + "/" + oGetImageRequest.getBookName() + "/Images/", extension,
 					fileName, Integer.valueOf(detailsObj.get("pageCount").toString()),
-					(List<String>) detailsObj.get("imageMapList"), null,
-					secondPageIndex);
-			
-			
+					(List<String>) detailsObj.get("imageMapList"), null, secondPageIndex);
+
 		}
-		
+
 		return (List<String>) detailsObj.get("imageMapList");
 	}
 
@@ -578,5 +574,30 @@ public class BinderService {
 		}
 		return bookMarkResponse;
 
+	}
+
+	/**
+	 * @param bookPageDetailsRequest
+	 * @return
+	 * @throws FileItException
+	 */
+	@POST
+	@Path("getBookPageDetails")
+	public BookPageDetailsResponse getBookPageDetails(BookPageDetailsRequest bookPageDetailsRequest)
+			throws FileItException {
+		BookPageDetailsResponse bookPageDetailsResponse = new BookPageDetailsResponse();
+		FileItContext oFileItContext = new FileItContext();
+		JSONObject pagedetaillsObj = (JSONObject) oFileItContext.get(bookPageDetailsRequest.getBookName());
+		Set keySet = pagedetaillsObj.keySet();
+		for (Object object : keySet) {
+			if (object.toString().endsWith("/" + bookPageDetailsRequest.getFileName())) {
+				List<Integer> pageArray = new ArrayList<>();
+				pageArray = (List<Integer>) pagedetaillsObj.get(object);
+				bookPageDetailsResponse.setFirstIndex(pageArray.get(0));
+				bookPageDetailsResponse.setLastIndex(pageArray.get(1));
+				break;
+			}
+		}
+		return bookPageDetailsResponse;
 	}
 }
